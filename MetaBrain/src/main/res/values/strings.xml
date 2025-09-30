@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name" translatable="false">File Recovery</string>
+
+    <string name="language_title">Language</string>
+
+    <string name="done">Done</string>
+    <string name="update_now">Update now</string>
+    <string name="title_update">New version available</string>
+    <string name="des_update">Please, update app to new version to continue using</string>
+    <string name="rate">Rate</string>
+    <string name="title_rate">How do you rate our App?</string>
+    <string name="body_rate">We\'d greatly appreciate if you can rate</string>
+    <string name="rate_thanks">Rate in app</string>
+    <string name="may_be_later">Maybe later</string>
+    <string name="des_rate_1_2_3">We\'d greatly appreciate if you can rate</string>
+    <string name="des_rate_4_5">We\'d greatly appreciate if you can rate</string>
+    <string name="please_give_us_some_feedback">Please give us some feedback</string>
+    <string name="thanks_for_your_feedback">Thanks for your feedback</string>
+    <string name="thanks_for_rating">Thanks for rating!</string>
+
+    <string name="how_to_work">How it works?</string>
+    <string name="scan_tip">The App help you recover deleted photos. The App will show all the images (Deleted and Not Deleted). Just Keep looking and you will find photos you are looking for. Please be patient and wait until it scans all folders and files.</string>
+    <string name="let_start">Let\'s Start</string>
+
+    <string name="premium">Premium</string>
+    <string name="analyzing">Analyzing…</string>
+
+    <string name="home_photos">Photos</string>
+    <string name="home_videos">Videos</string>
+    <string name="home_audios">Audios</string>
+    <string name="home_files_docs">Files &amp; Docs</string>
+
+    <string name="restore_folder_path_photo" translatable="false">RestoredPhotos</string>
+    <string name="restore_folder_path_video" translatable="false">RestoredVideos</string>
+    <string name="restore_folder_path_audio" translatable="false">RestoredAudios</string>
+    <string name="restore_folder_path_document" translatable="false">RestoredDocuments</string>
+
+
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+    <string name="permission_title">Permission request</string>
+    <string name="request_permission_cause">"This app can't run because it does not have the read and write permissions in Android 11. Please grant permission."</string>
+    <string name="cancel_dialog">Cancel</string>
+    <string name="denied_permission">Permission denied</string>
+    <string name="granted_permission">Permission granted</string>
+    <string name="error_permission_deny">You must grant read and write permissions to use this feature</string>
+
+    <string name="video_recovery">Video Recovery</string>
+    <string name="audio_recovery">Audio Recovery</string>
+
+    <string name="text_scanning">Scanning %d\%%</string>
+    <string name="scan_photos">Scan photos</string>
+    <string name="scan_videos">Scan videos</string>
+    <string name="scan_audios">Scan audios</string>
+    <string name="scan_files">Scan files</string>
+    <string name="tap_start_scan">Tap to start scanning</string>
+    <string name="cancel_scan">Cancel</string>
+
+    <string name="photo_recover">Photos Recovery</string>
+    <string name="video_recover">Videos Recovery</string>
+    <string name="audio_recover">Audios Recovery</string>
+    <string name="document_recover">Documents Recovery</string>
+    <string name="recover">Recover (%s)</string>
+
+    <string name="setting_title">Setting</string>
+    <string name="setting_protected_file">Protected File</string>
+    <string name="setting_restored_file">Restored File</string>
+    <string name="file_recovery">File Recovery</string>
+    <string name="ad">Ad</string>
+    <string name="recovering">Recovering</string>
+    <string name="my_premium">My Premium</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="share_to_friend">Share To Friend</string>
+    <plurals name="file">
+        <item quantity="one">%d File</item>
+        <item quantity="other">%d Files</item>
+    </plurals>
+    <string name="language_setting">Language</string>
+    <string name="more_app">More App</string>
+    <string name="feedback">Feedback</string>
+    <string name="exit_title">Do you really want to exit?</string>
+
+</resources>

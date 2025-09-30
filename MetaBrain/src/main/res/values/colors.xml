@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="color_bg_setting">#F6F6F6</color>
+    <color name="greenTick">#4DAF51</color>
+    <color name="greenChoose">#219653</color>
+    <color name="greyChoose">#828282</color>
+    <color name="color_text_language">#111111</color>
+
+    <color name="bg_main_color">#F0F3F7</color>
+    <color name="transparent">#00000000</color>
+    <color name="grey_transparent">#80000000</color>
+    <color name="md_grey_100">#F5F5F5</color>
+    <color name="md_grey_500">#9E9E9E</color>
+    <color name="blue">#1873DE</color>
+
+    <color name="colorProgressStartPhoto">#8019DA21</color>
+    <color name="colorProgressEndPhoto">#0CA312</color>
+    <color name="colorProgressStartVideo">#82FF0921</color>
+    <color name="colorProgressEndVideo">#FC3C4F</color>
+    <color name="colorProgressStartAudio">#69A828D8</color>
+    <color name="colorProgressEndAudio">#AE43D6</color>
+    <color name="colorProgressStartFile">#990078FF</color>
+    <color name="colorProgressEndFile">#0263D0</color>
+
+</resources>
