@@ -1,4 +1,4 @@
-package com.meta.brain
+package com.meta.brain.base
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

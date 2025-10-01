@@ -18,6 +18,9 @@ class AdsBanner {
 
     fun loadBanner(context: Context, adUnit:String, container: ViewGroup) {
         if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Banner Ad call, id: $adUnit")
+            }
             FirebaseManager.sendLog("banner_call",null)
             val adView = AdView(context)
             adView.adUnitId = adUnit
@@ -39,11 +42,17 @@ class AdsBanner {
             adView.adListener = object : AdListener() {
                 override fun onAdClicked() {
                     // Code to be executed when the user clicks on an ad.
+                    if (MetaBrainApp.debug) {
+                        Log.d(TAG, "Banner Ad click.")
+                    }
                 }
 
                 override fun onAdClosed() {
                     // Code to be executed when the user is about to return
                     // to the app after tapping on an ad.
+                    if (MetaBrainApp.debug) {
+                        Log.d(TAG, "Banner Ad closed.")
+                    }
                 }
 
                 override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -56,6 +65,9 @@ class AdsBanner {
                 override fun onAdImpression() {
                     // Code to be executed when an impression is recorded
                     // for an ad.
+                    if (MetaBrainApp.debug) {
+                        Log.d(TAG, "Banner Ad impress.")
+                    }
                 }
 
                 override fun onAdLoaded() {
@@ -68,6 +80,9 @@ class AdsBanner {
                 override fun onAdOpened() {
                     // Code to be executed when an ad opens an overlay that
                     // covers the screen.
+                    if (MetaBrainApp.debug) {
+                        Log.d(TAG, "Banner Ad open cover screen.")
+                    }
                 }
             }
         }

@@ -178,7 +178,7 @@ fun sendFeedback(activity: Activity?) {
     }
     val emailIntent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_EMAIL, arrayOf(GMAIL))
-        putExtra(Intent.EXTRA_SUBJECT, activity?.resources?.getString(R.string.app_name) + " feedback")
+        putExtra(Intent.EXTRA_SUBJECT, activity?.resources?.getString(R.string.splash_name) + " feedback")
         putExtra(Intent.EXTRA_TEXT, "")
         selector = selectorIntent
     }

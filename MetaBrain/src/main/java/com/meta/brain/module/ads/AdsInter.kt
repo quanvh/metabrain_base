@@ -45,7 +45,9 @@ class AdsInter (val preload: Boolean = false) {
         if (adIsLoading) return
 
         adIsLoading = true
-
+        if (MetaBrainApp.debug) {
+            Log.d(TAG, "Inter Ad call, id: $adUnit")
+        }
         FirebaseManager.sendLog("inter_call",null)
         InterstitialAd.load(
             context,
@@ -59,7 +61,7 @@ class AdsInter (val preload: Boolean = false) {
 
                     FirebaseManager.sendLog("inter_loaded",null)
                     if (MetaBrainApp.debug) {
-                        Log.d(TAG, "Ad inter was loaded.")
+                        Log.d(TAG, "Inter Ad was loaded.")
                         Toast.makeText(context, "onAdLoaded()", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -71,7 +73,7 @@ class AdsInter (val preload: Boolean = false) {
                     onEvent?.onLoadFail()
                     FirebaseManager.sendLog("inter_load_fail",null)
                     if (MetaBrainApp.debug) {
-                        Log.d(TAG, adError.message)
+                        Log.d(TAG, "Inter Ad load failed: " + adError.message)
                         val error =
                             "domain: ${adError.domain}, code: ${adError.code}, " + "message: ${adError.message}"
                         Toast.makeText(
@@ -100,13 +102,15 @@ class AdsInter (val preload: Boolean = false) {
         }
 
         if (inter != null) {
-            Log.d(TAG,"==== show inter")
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Inter Ad show")
+            }
             FirebaseManager.sendLog("inter_show",null)
             inter?.fullScreenContentCallback =
                 object : FullScreenContentCallback() {
                     override fun onAdDismissedFullScreenContent() {
                         if (MetaBrainApp.debug) {
-                            Log.d(AdsController.Companion.TAG, "Ad was dismissed.")
+                            Log.d(TAG, "Inter Ad was dismissed.")
                         }
                         timeLastInter = System.currentTimeMillis()
                         inter = null
@@ -117,7 +121,7 @@ class AdsInter (val preload: Boolean = false) {
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                         if (MetaBrainApp.debug) {
-                            Log.d(AdsController.Companion.TAG, "Ad failed to show.")
+                            Log.d(TAG, "Inter Ad failed to show: " + adError.message)
                         }
                         inter = null
                         FirebaseManager.sendLog("inter_show_fail",null)
@@ -126,19 +130,19 @@ class AdsInter (val preload: Boolean = false) {
 
                     override fun onAdShowedFullScreenContent() {
                         if (MetaBrainApp.debug) {
-                            Log.d(AdsController.Companion.TAG, "Ad showed fullscreen content.")
+                            Log.d(TAG, "Inter Ad showed fullscreen content.")
                         }
                     }
 
                     override fun onAdImpression() {
                         if (MetaBrainApp.debug) {
-                            Log.d(AdsController.Companion.TAG, "Ad recorded an impression.")
+                            Log.d(TAG, "Inter Ad recorded an impression.")
                         }
                     }
 
                     override fun onAdClicked() {
                         if (MetaBrainApp.debug) {
-                            Log.d(AdsController.Companion.TAG, "Ad was clicked.")
+                            Log.d(TAG, "Inter Ad was clicked.")
                         }
                     }
                 }
@@ -146,6 +150,9 @@ class AdsInter (val preload: Boolean = false) {
         } else{
             onEvent?.onComplete()
             if(preload) loadInter(activity,currentUnit,loadAction)
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Inter Ad not available")
+            }
             FirebaseManager.sendLog("inter_not_avail",null)
         }
 

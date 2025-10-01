@@ -23,6 +23,9 @@ class AdsReward (var preload: Boolean = false){
         currentUnit = adUnit
         loadAction = onEvent
         if (rewardedAd == null) {
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Reward Ad call, id: $adUnit")
+            }
             FirebaseManager.sendLog("reward_call",null)
             isLoading = true
 
@@ -37,7 +40,7 @@ class AdsReward (var preload: Boolean = false){
                         isLoading = false
                         onEvent?.onLoaded()
                         if(MetaBrainApp.debug){
-                            Log.d(TAG, "Reward Ad was loaded.")
+                            Log.d(TAG, "Reward Ad was loaded, id: $adUnit")
                         }
                     }
 
@@ -47,7 +50,7 @@ class AdsReward (var preload: Boolean = false){
                         isLoading = false
                         onEvent?.onLoadFail()
                         if(MetaBrainApp.debug){
-                            Log.d(TAG, "Reward load error:" + adError.message)
+                            Log.d(TAG, "Reward Ad load failed:" + adError.message)
                         }
                     }
                 },
@@ -57,6 +60,9 @@ class AdsReward (var preload: Boolean = false){
 
     fun showReward(activity: Activity, onEvent: AdEvent?) {
         if (rewardedAd != null) {
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Reward Ad show")
+            }
             FirebaseManager.sendLog("reward_show",null)
             rewardedAd?.fullScreenContentCallback =
                 object : FullScreenContentCallback() {
@@ -75,7 +81,7 @@ class AdsReward (var preload: Boolean = false){
                         onEvent?.onShowFail()
                         if(preload) loadReward(activity,currentUnit,null)
                         if(MetaBrainApp.debug){
-                            Log.d(TAG, "Reward Ad failed to show.")
+                            Log.d(TAG, "Reward Ad failed to show: " + adError.message)
                         }
                         FirebaseManager.sendLog("reward_show_fail",null)
                     }
@@ -83,21 +89,21 @@ class AdsReward (var preload: Boolean = false){
                     override fun onAdShowedFullScreenContent() {
                         onEvent?.onShow()
                         if(MetaBrainApp.debug) {
-                            Log.d(TAG, "Ad showed fullscreen content.")
+                            Log.d(TAG, "Reward Ad showed fullscreen content.")
                         }
                     }
 
                     override fun onAdImpression() {
                         onEvent?.onImpress()
                         if(MetaBrainApp.debug) {
-                            Log.d(TAG, "Ad recorded an impression.")
+                            Log.d(TAG, "Reward Ad recorded an impression.")
                         }
                     }
 
                     override fun onAdClicked() {
                         onEvent?.onClick()
                         if(MetaBrainApp.debug) {
-                            Log.d(TAG, "Ad was clicked.")
+                            Log.d(TAG, "Reward Ad was clicked.")
                         }
                     }
                 }
@@ -106,12 +112,15 @@ class AdsReward (var preload: Boolean = false){
                 activity,
                 OnUserEarnedRewardListener { rewardItem ->
                     if(MetaBrainApp.debug) {
-                        Log.d(TAG, "User earned the reward.")
+                        Log.d(TAG, "Reward Ad -> User earned the reward.")
                     }
                 },
             )
         } else {
             if(preload) loadReward(activity,currentUnit,loadAction)
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "Reward Ad not available")
+            }
             FirebaseManager.sendLog("reward_not_avail",null)
         }
     }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Meta Brain</string>
+    <string name="splash_name">Meta Brain</string>
     <string name="language_title">Language</string>
 
     <string name="done">Done</string>

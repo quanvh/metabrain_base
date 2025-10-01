@@ -27,6 +27,9 @@ class AppOpen {
 
     fun loadOpenAd(context: Context,adUnit:String, onEvent: AdEvent?) {
         if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
+            if (MetaBrainApp.debug) {
+                Log.d(TAG, "OpenAd call, id: $adUnit")
+            }
             FirebaseManager.sendLog("openAd_load",null)
             currentUnit = adUnit
             if (isLoadingAd || isAdAvailable()) {
@@ -47,7 +50,7 @@ class AppOpen {
                         onEvent?.onLoaded()
 
                         if (MetaBrainApp.debug) {
-                            Log.d(TAG, "onAdLoaded.")
+                            Log.d(TAG, "OpenAd was loaded")
                             Toast.makeText(context, "onAdLoaded", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -58,7 +61,7 @@ class AppOpen {
                         onEvent?.onLoadFail()
 
                         if (MetaBrainApp.debug) {
-                            Log.d(TAG, "onAdFailedToLoad: " + loadAdError.message)
+                            Log.d(TAG, "OpenAd load failed: " + loadAdError.message)
                             Toast.makeText(context, "onAdFailedToLoad", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -76,13 +79,15 @@ class AppOpen {
     fun showOpenAd(activity: Activity, onEvent: AdEvent?) {
         if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
             if (isShowingAd) {
-                Log.d(TAG, "The app open ad is already showing.")
+                if(MetaBrainApp.debug) {
+                    Log.d(TAG, "OpenAd is already showing.")
+                }
                 return
             }
 
             if (!isAdAvailable()) {
                 if (MetaBrainApp.debug) {
-                    Log.d(TAG, "The app open ad is not ready yet.")
+                    Log.d(TAG, "OpenAd is not ready yet.")
                 }
                 FirebaseManager.sendLog("openAd_not_avail",null)
                 onEvent?.onComplete()
@@ -93,7 +98,7 @@ class AppOpen {
             FirebaseManager.sendLog("openAd_show",null)
 
             if (MetaBrainApp.debug) {
-                Log.d(TAG, "Will show ad.")
+                Log.d(TAG, "OpenAd show")
             }
 
             appOpenAd?.fullScreenContentCallback =
@@ -105,7 +110,8 @@ class AppOpen {
                         if (preload) loadOpenAd(activity, currentUnit, null)
 
                         if (MetaBrainApp.debug) {
-                            Log.d(TAG, "onAdDismissedFullScreenContent.")
+                            Log.d(TAG, "OpenAd show success")
+
                             Toast.makeText(
                                 activity,
                                 "onAdDismissedFullScreenContent",
@@ -122,7 +128,7 @@ class AppOpen {
                         if (preload) loadOpenAd(activity, currentUnit, null)
 
                         if (MetaBrainApp.debug) {
-                            Log.d(TAG, "onAdFailedToShowFullScreenContent: " + adError.message)
+                            Log.d(TAG, "OpenAd show failed: " + adError.message)
                             Toast.makeText(
                                 activity,
                                 "onAdFailedToShowFullScreenContent",
@@ -134,7 +140,7 @@ class AppOpen {
 
                     override fun onAdShowedFullScreenContent() {
                         if (MetaBrainApp.debug) {
-                            Log.d(TAG, "onAdShowedFullScreenContent.")
+                            Log.d(TAG, "OpenAd show")
                             Toast.makeText(activity, "onAdShowedFullScreenContent", Toast.LENGTH_SHORT).show()
                         }
                     }

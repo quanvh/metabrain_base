@@ -1,4 +1,4 @@
-package com.meta.brain
+package com.meta.brain.base
 
 import org.junit.Test
 

@@ -14,7 +14,7 @@ import com.meta.brain.module.loading.LoadingAdFragment
 
 open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     var currentActivity: Activity? = null
-
+    private val TAG = "[MetaBrainApp]"
     companion object{
         var debug: Boolean = false
     }
@@ -28,6 +28,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
 
     private val excludedActivities = listOf(
         "LoadingActivity",
+        "LanguageActivity",
         "AdActivity"
     )
 
@@ -37,7 +38,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
             val activityName = currentActivity!!.localClassName
             if (!excludedActivities.contains(activityName) && currentActivity is AppCompatActivity) {
                 if(debug) {
-                    Log.d("[App]", "==== $activityName resumed, show open ads")
+                    Log.d(TAG, "==== $activityName resumed, show open ads")
                 }
 
                 if (FirebaseManager.rc.useOpenResume) {
@@ -59,7 +60,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
 
             } else {
                 if(debug) {
-                    Log.d("[App]", "==== $activityName resumed (excluded)")
+                    Log.d(TAG, "==== $activityName resumed (excluded)")
                 }
             }
         }
@@ -69,7 +70,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
         if(debug) {
-            Log.d("[App]", "==== App change to background")
+            Log.d(TAG, "==== App change to background")
         }
     }
 
@@ -80,7 +81,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
     override fun onActivityResumed(activity: Activity) {
         currentActivity = activity
         if(debug) {
-            Log.d("App", "==== Resumed: ${activity.localClassName}")
+            Log.d(TAG, "==== Resumed: ${activity.localClassName}")
         }
     }
 
