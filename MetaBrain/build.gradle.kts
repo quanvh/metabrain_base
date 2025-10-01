@@ -26,6 +26,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean", "ADS_LIVE", "true")
+            buildConfigField("boolean", "APP_DEBUG", "false")
+        }
+        debug{
+            buildConfigField("boolean", "ADS_LIVE", "false")
+            buildConfigField("boolean", "APP_DEBUG", "true")
         }
     }
     compileOptions {
@@ -45,6 +51,18 @@ android {
                     groupId = "com.github.quanvh"
                     artifactId = "metabrain"
                     version = "1.0.0"
+                }
+            }
+            repositories {
+                maven {
+                    val githubUser = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER")
+                    val githubToken = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+
+                    url = uri("https://maven.pkg.github.com/quanvh/metabrain_base")
+                    credentials {
+                        username = githubUser
+                        password = githubToken
+                    }
                 }
             }
         }
