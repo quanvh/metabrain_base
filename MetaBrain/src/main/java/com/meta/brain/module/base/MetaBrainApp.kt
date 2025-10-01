@@ -12,8 +12,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.loading.LoadingAdFragment
 
-class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
-    private var currentActivity: Activity? = null
+open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
+    var currentActivity: Activity? = null
 
     companion object{
         var debug: Boolean = false

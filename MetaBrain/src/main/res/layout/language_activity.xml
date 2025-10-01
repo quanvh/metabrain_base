@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#F6FAFF"
-        tools:context=".ui.activity.LanguageActivity">
+        tools:context=".module.language.LanguageActivity">
 
         <!-- Header -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -66,7 +66,7 @@
                 android:padding="@dimen/_5sdp"
                 android:text="@string/done"
                 android:textColor="@color/white"
-                android:textSize="@dimen/size_detail"
+                android:textSize="14sp"
                 android:visibility="gone"
                 app:layout_constraintTop_toTopOf="@id/tvtTitle"
                 app:layout_constraintBottom_toBottomOf="@id/tvtTitle"

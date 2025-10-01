@@ -32,7 +32,7 @@
         android:layout_marginTop="10dp"
         android:textColor="#1574F3"
         android:textAllCaps="true"
-        android:textSize="@dimen/size_title" />
+        android:textSize="20sp" />
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieAnimationView"

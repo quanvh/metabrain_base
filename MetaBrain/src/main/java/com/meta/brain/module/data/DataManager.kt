@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.utils.PrefUtil
@@ -13,6 +14,12 @@ import java.time.LocalDateTime
 class DataManager {
     companion object {
         lateinit var user: UserData
+
+        var mainActivity: Class<out AppCompatActivity>? = null
+
+        fun setStartActivity(activityClass: Class<out AppCompatActivity>) {
+            mainActivity = activityClass
+        }
 
         fun init(context: Context){
             val userString = PrefUtil.getUserData(context)

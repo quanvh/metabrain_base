@@ -15,13 +15,5 @@
     <color name="md_grey_500">#9E9E9E</color>
     <color name="blue">#1873DE</color>
 
-    <color name="colorProgressStartPhoto">#8019DA21</color>
-    <color name="colorProgressEndPhoto">#0CA312</color>
-    <color name="colorProgressStartVideo">#82FF0921</color>
-    <color name="colorProgressEndVideo">#FC3C4F</color>
-    <color name="colorProgressStartAudio">#69A828D8</color>
-    <color name="colorProgressEndAudio">#AE43D6</color>
-    <color name="colorProgressStartFile">#990078FF</color>
-    <color name="colorProgressEndFile">#0263D0</color>
 
 </resources>

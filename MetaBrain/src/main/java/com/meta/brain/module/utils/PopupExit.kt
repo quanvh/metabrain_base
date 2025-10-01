@@ -19,7 +19,6 @@ class PopupExit : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         isCancelable = false
-        setStyle(STYLE_NORMAL, R.style.FullScreenDialog)
     }
 
     override fun onCreateView(

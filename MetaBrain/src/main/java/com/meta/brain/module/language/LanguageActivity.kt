@@ -25,21 +25,12 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
         val languageCode = mutableListOf(
             "en", "in", "pt", "es", "hi", "tr", "fr", "vi", "ru"
         )
-
-        const val LANGUAGE_FIRST_OPEN = 0
-        const val LANGUAGE_SETTING = 1
     }
-
-    private var type = LANGUAGE_FIRST_OPEN
     private var languageModel: LanguageModel? = null
 
     override fun initView() {
-        type = intent?.getIntExtra("type", LANGUAGE_FIRST_OPEN)!!
-        if (type == LANGUAGE_FIRST_OPEN) {
-            binding.imgBack.invisible()
-        } else {
-            binding.imgBack.visible()
-        }
+
+        binding.imgBack.invisible()
         binding.imgBack.setOnClickListener { finish() }
 
         binding.imgDone.setOnClickListener {
@@ -53,24 +44,19 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
         DataManager.user.chooseLang = true
         if (languageModel != null) {
             DataManager.user.language = languageModel!!.languageCode
-            if (type == LANGUAGE_FIRST_OPEN) {
-                Utility.setLocale(this)
-//                startActivity(Intent(this, IntroActivity::class.java))
-                finish()
-            } else {
-                setHomeLocale(languageModel?.languageCode!!)
-            }
-        } else {
-            if (type == LANGUAGE_FIRST_OPEN) {
-                Utility.setLocale(this)
-//                startActivity(Intent(this, IntroActivity::class.java))
-                finish()
-            } else {
-//                startActivity(Intent(this, HomeActivity::class.java))
-                finish()
-            }
         }
         DataManager.saveData(this)
+        Utility.setLocale(this)
+        val activityClass = DataManager.mainActivity
+        if (activityClass != null) {
+            val intent = Intent(this, activityClass)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+
+            finish()
+        } else {
+            throw IllegalStateException("MainActivity init first!")
+        }
     }
 
     private fun initLanguageData() {

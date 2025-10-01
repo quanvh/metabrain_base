@@ -41,7 +41,7 @@
                 android:fontFamily="@font/roboto_medium"
                 android:text="English"
                 android:textColor="@color/color_text_language"
-                android:textSize="@dimen/size_description"
+                android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="@+id/countryImage"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/countryImage"

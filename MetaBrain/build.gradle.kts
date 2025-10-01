@@ -50,7 +50,7 @@ android {
 
                     groupId = "com.github.quanvh"
                     artifactId = "metabrain"
-                    version = "1.0.0"
+                    version = "1.0.1"
                 }
             }
             repositories {
@@ -87,8 +87,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.cardview)
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("androidx.cardview:cardview:1.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,12 +102,12 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.lottie)
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("com.airbnb.android:lottie:6.6.9")
     implementation(libs.circleimageview)
     implementation(libs.progressview)
-    implementation(libs.sdp.android)
-    implementation(libs.ssp.android)
+    implementation("com.intuit.sdp:sdp-android:1.1.1")
+    implementation("com.intuit.ssp:ssp-android:1.1.1")
 
     // Firebase BoM
     implementation(platform ("com.google.firebase:firebase-bom:33.2.0"))

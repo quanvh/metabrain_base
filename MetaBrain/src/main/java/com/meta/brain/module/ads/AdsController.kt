@@ -97,40 +97,64 @@ class AdsController () {
             }
         }
 
-        fun loadInter(context: Context,onEvent: AdEvent?){
-            var interDefault = context.getString(R.string.inter_default)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.interDefault.isNotEmpty()) {
-                interDefault = FirebaseManager.adUnit.interDefault
+        fun loadInter(context: Context,onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useInterDefault) {
+                var interDefault = context.getString(R.string.inter_default)
+                if (!MetaBrainApp.debug && FirebaseManager.adUnit.interDefault.isNotEmpty()) {
+                    interDefault = FirebaseManager.adUnit.interDefault
+                }
+                adInter.loadInter(context, interDefault, onEvent)
+            } else {
+                onEvent?.onLoaded()
             }
-            adInter.loadInter(context,interDefault,onEvent)
         }
 
-        fun loadInterResume(context: Context,onEvent: AdEvent?){
-            var interResume = context.getString(R.string.inter_resume)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.interResume.isNotEmpty()) {
-                interResume = FirebaseManager.adUnit.interResume
+        fun loadInterResume(context: Context,onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useInterResume) {
+                var interResume = context.getString(R.string.inter_resume)
+                if (!MetaBrainApp.debug && FirebaseManager.adUnit.interResume.isNotEmpty()) {
+                    interResume = FirebaseManager.adUnit.interResume
+                }
+                adInterResume.loadInter(context, interResume, onEvent)
+            } else {
+                onEvent?.onLoaded()
             }
-            adInterResume.loadInter(context,interResume,onEvent)
         }
 
-        fun loadInterOpen(context: Context,onEvent: AdEvent?){
-            var interOpen = context.getString(R.string.inter_open)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.interOpen.isNotEmpty()) {
-                interOpen = FirebaseManager.adUnit.interOpen
+        fun loadInterOpen(context: Context,onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useInterOpen) {
+                var interOpen = context.getString(R.string.inter_open)
+                if (!MetaBrainApp.debug && FirebaseManager.adUnit.interOpen.isNotEmpty()) {
+                    interOpen = FirebaseManager.adUnit.interOpen
+                }
+                adInterOpen.loadInter(context, interOpen, onEvent)
+            } else {
+                onEvent?.onLoaded()
             }
-            adInterOpen.loadInter(context,interOpen,onEvent)
         }
 
         fun showInter(activity: Activity, onEvent: AdEvent?){
-            adInter.showInter(activity,onEvent)
+            if (FirebaseManager.rc.useInterDefault) {
+                adInter.showInter(activity, onEvent)
+            } else {
+                onEvent?.onComplete()
+            }
         }
 
         fun showInterResume(activity: Activity, onEvent: AdEvent?){
-            adInterResume.showInter(activity,onEvent)
+            if (FirebaseManager.rc.useInterResume) {
+                adInterResume.showInter(activity, onEvent)
+            } else {
+                onEvent?.onComplete()
+            }
         }
 
         fun showInterOpen(activity: Activity, onEvent: AdEvent?){
-            adInterOpen.showInter(activity,onEvent)
+            if (FirebaseManager.rc.useInterOpen) {
+                adInterOpen.showInter(activity,onEvent)
+            } else {
+                onEvent?.onComplete()
+            }
         }
 
         fun loadOpenAdSplash(context: Context,onEvent: AdEvent?){
@@ -142,17 +166,29 @@ class AdsController () {
             appOpen.loadOpenAd(context, openSplash,onEvent)
         }
         fun loadOpenAdResume(context: Context, onEvent: AdEvent?){
-            var openResume = context.getString(R.string.open_resume)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.openResume.isNotEmpty()){
-                openResume = FirebaseManager.adUnit.openResume
+            if(FirebaseManager.rc.useOpenResume) {
+                var openResume = context.getString(R.string.open_resume)
+                if (!MetaBrainApp.debug && FirebaseManager.adUnit.openResume.isNotEmpty()) {
+                    openResume = FirebaseManager.adUnit.openResume
+                }
+                appOpenResume.loadOpenAd(context, openResume, onEvent)
+            } else {
+                onEvent?.onLoaded()
             }
-            appOpenResume.loadOpenAd(context, openResume,onEvent)
         }
         fun showOpenAd(activity: Activity, onEvent: AdEvent?){
-            appOpen.showOpenAd(activity,onEvent)
+            if(FirebaseManager.rc.useOpenSplash) {
+                appOpen.showOpenAd(activity, onEvent)
+            } else {
+                onEvent?.onComplete()
+            }
         }
         fun showOpenAdResume(activity: Activity, onEvent: AdEvent?){
-            appOpenResume.showOpenAd(activity,onEvent)
+            if(FirebaseManager.rc.useOpenResume){
+                appOpenResume.showOpenAd(activity,onEvent)
+            } else {
+                onEvent?.onComplete()
+            }
         }
 
         fun loadReward(context: Context,onEvent: AdEvent?){

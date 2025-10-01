@@ -1,7 +1,5 @@
 package com.meta.brain.module.firebase
 
-import com.meta.brain.R
-
 class RemoteConfig {
     var useAds = true
     var useInterOpen = true
@@ -29,6 +27,7 @@ class RemoteConfig {
     var timeShowCloseAge = 1
     var timeFirstInter = 45
     var durationInter = 45
+    var useLanguageOpen = true
 }
 
 class AppVersion{

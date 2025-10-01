@@ -108,10 +108,10 @@ class LoadingActivity : BaseActivity() {
     private fun checkUpdate(){
         var currentCode = 0L
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            currentCode = packageInfo.longVersionCode
+        currentCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
         } else {
-            currentCode = packageInfo.versionCode.toLong()
+            packageInfo.versionCode.toLong()
         }
         if(FirebaseManager.appVersion.isForce && FirebaseManager.appVersion.versionCode > currentCode){
             showUpdateDialog()
@@ -129,17 +129,20 @@ class LoadingActivity : BaseActivity() {
         }
         isStartMain = true
         if (!isDestroyed) {
-            if (DataManager.user.firstOpen) {
+            if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
                 val intent = Intent(this,LanguageActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                intent.putExtra("type", LanguageActivity.LANGUAGE_FIRST_OPEN)
 
                 startActivity(intent)
             } else {
-//                val intent = Intent(this, IntroActivity::class.java)
-//                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//
-//                startActivity(intent)
+                val activityClass = DataManager.mainActivity
+                if (activityClass != null) {
+                    val intent = Intent(this, activityClass)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                } else {
+                    throw IllegalStateException("MainActivity init first!")
+                }
             }
         }
     }
