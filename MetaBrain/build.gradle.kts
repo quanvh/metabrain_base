@@ -86,9 +86,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.appcompat)
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.cardview:cardview:1.0.0")
+    api(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,23 +100,34 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-    implementation("com.airbnb.android:lottie:6.6.9")
+
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.lottie)
     implementation(libs.circleimageview)
     implementation(libs.progressview)
-    implementation("com.intuit.sdp:sdp-android:1.1.1")
-    implementation("com.intuit.ssp:ssp-android:1.1.1")
+
+    implementation(libs.sdp.android)
+    implementation(libs.ssp.android)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     // Firebase BoM
-    implementation(platform ("com.google.firebase:firebase-bom:33.2.0"))
+    implementation(platform (libs.firebase.bom))
 
     // Firebase SDKs
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-config-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.config.ktx)
+    implementation(libs.firebase.crashlytics.ktx)
+
     // Admob
     implementation(libs.user.messaging.platform)
     implementation(libs.play.services.ads)
+
+    // Appsflyer
+    implementation(libs.af.android.sdk)
 
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.gson)

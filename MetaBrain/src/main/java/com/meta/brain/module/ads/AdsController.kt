@@ -9,9 +9,11 @@ import com.meta.brain.R
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.utils.Utility
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class AdsController () {
 
@@ -34,7 +36,8 @@ class AdsController () {
             return adOpenCount >= 1
         }
         fun initAdmob(context: Context) {
-
+            val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
+                    && !(FirebaseManager.rc.checkBot && Utility.isBot(context))
 //             Log the Mobile Ads SDK version.
             if(MetaBrainApp.debug) {
                 Log.d(TAG, "Google Mobile Ads SDK Version: " + MobileAds.getVersion())
@@ -47,12 +50,7 @@ class AdsController () {
                     }
                     //init inter default, call load function if preload
                     val preloadInter = context.resources.getBoolean(R.bool.preload_inter)
-                    if(preloadInter) {
-                        adInter = AdsInter(true)
-                        loadInter(context, null)
-                    } else {
-                        adInter = AdsInter(false)
-                    }
+                    adInter = AdsInter(preloadInter)
 
                     adInterOpen = AdsInter()
                     adInterResume = AdsInter()
@@ -61,37 +59,38 @@ class AdsController () {
 
                     //init reward default, call load function if preload
                     val preloadReward = context.resources.getBoolean(R.bool.preload_reward)
-                    if(preloadReward) {
-                        adsReward = AdsReward(true)
-                        loadReward(context, null)
-                    } else {
-                        adsReward = AdsReward(false)
-                    }
-
+                    adsReward = AdsReward(preloadReward)
 
                     adsNative = AdsNative()
                     adsBanner = AdsBanner()
 
-                    if(FirebaseManager.rc.useAds && !DataManager.user.removeAds){
+                    fun preloadAds(){
+                        if(preloadInter) {
+                            loadInter(context, null)
+                        }
+                        if(preloadReward) {
+                            loadReward(context, null)
+                        }
+                    }
+
+                    fun initApp(){
+                        adOpenCount++
+                        preloadAds()
+                    }
+                    if(isLoadAds){
                         val adOpenEvent = object : AdEvent() {
-                            override fun onLoaded() {
-                                adOpenCount++
-                            }
-                            override fun onLoadFail() {
-                                adOpenCount++
-                            }
+                            override fun onLoaded() = initApp()
+                            override fun onLoadFail() =initApp()
                         }
 
                         if(FirebaseManager.rc.useInterOpen) {
                             loadInterOpen(context,adOpenEvent)
                         } else if (FirebaseManager.rc.useOpenSplash){
                             loadOpenAdSplash(context,adOpenEvent)
-                        } else {
-                            adOpenCount++
-                        }
+                        } else initApp()
                     }
-                    else{
-                        adOpenCount++
+                    else {
+                        initApp()
                     }
                 }
             }

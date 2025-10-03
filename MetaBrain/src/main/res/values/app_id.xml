@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="admob_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="af_key" translatable="false">Qhno4yJY6KHmZp9uS9DRe3</string>
 
     <string name="open_splash" translatable="false">ca-app-pub-3940256099942544/9257395921</string>
     <string name="open_resume" translatable="false">ca-app-pub-3940256099942544/9257395921</string>

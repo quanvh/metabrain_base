@@ -2,9 +2,14 @@ package com.meta.brain.module.utils
 
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Build
+import android.os.Debug
 import android.os.Environment
+import android.util.Log
 import android.view.View
 import android.view.Window
 import androidx.core.content.ContextCompat
@@ -69,6 +74,35 @@ class Utility {
                 displayMetrics.widthPixels
             }
             return (adWidthPixels / displayMetrics.density).toInt()
+        }
+
+        fun isBot (context : Context) : Boolean {
+//            Log.e("====", "is emulator: " + isEmulator()+
+//                    ", is debugger: " + isDebugger(context) + ", is sensor: "+notSensor(context))
+            return (isEmulator() || isDebugger(context) || notSensor(context) )
+        }
+
+        private fun isEmulator() : Boolean {
+            return Build.FINGERPRINT.startsWith("generic")
+                    || Build.FINGERPRINT.startsWith("unknown")
+                    || Build.MODEL.contains("google_sdk")
+                    || Build.MODEL.contains("Emulator")
+                    || Build.MODEL.contains("Android SDK built for x86")
+                    || Build.BOARD == "QC_Reference_Phone" //bluestacks
+                    || Build.MANUFACTURER.contains("Genymotion")
+                    || Build.HOST.startsWith("Build") //MSI App Player
+                    || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+                    || "google_sdk" == Build.PRODUCT
+        }
+
+        private fun isDebugger(context: Context): Boolean {
+            return Debug.isDebuggerConnected() ||
+                    (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        }
+
+        private fun notSensor(context: Context): Boolean {
+            val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            return sensorManager.getSensorList(Sensor.TYPE_ALL).isEmpty()
         }
     }
 }

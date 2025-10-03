@@ -1,24 +1,26 @@
 package com.meta.brain.module.firebase
 
 class RemoteConfig {
-    var useAds = true
-    var useInterOpen = true
-    var useInterDefault = true
-    var useInterResume = true
-    var useOpenSplash = true
-    var useOpenResume = true
-    var useBanner = true
-    var useNativeLanguage = true
-    var useNativeLanguageSelected = true
-    var useNativeIntro1 = true
-    var useNativeIntro2 = true
-    var useNativeIntro3 = true
-    var useNativeIntro4 = true
-    var useInterIntro1 = true
-    var useInterIntro2 = true
-    var useInterIntro3 = true
-    var useInterIntro4 = true
-    var useNativeHome = true
+    var checkBot = false
+    var checkOrganic = false
+    var useAds = false
+    var useInterOpen = false
+    var useInterDefault = false
+    var useInterResume = false
+    var useOpenSplash = false
+    var useOpenResume = false
+    var useBanner = false
+    var useNativeLanguage = false
+    var useNativeLanguageSelected = false
+    var useNativeIntro1 = false
+    var useNativeIntro2 = false
+    var useNativeIntro3 = false
+    var useNativeIntro4 = false
+    var useInterIntro1 = false
+    var useInterIntro2 = false
+    var useInterIntro3 = false
+    var useInterIntro4 = false
+    var useNativeHome = false
     var timeLoadInter = 6
     var timeLoadNative = 6
     var timeLoadBanner = 15

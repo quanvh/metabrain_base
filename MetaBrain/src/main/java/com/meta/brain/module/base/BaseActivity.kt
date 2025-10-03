@@ -17,10 +17,10 @@ abstract class BaseActivity : AppCompatActivity() {
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        changeStatusBarColor(android.R.color.transparent)
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
+//        changeStatusBarColor(android.R.color.transparent)
         Utility.hideNavigationDevice(window)
 
         val params = Bundle().apply {

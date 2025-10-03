@@ -13,6 +13,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.utils.Utility
 
 class AdsInter (val preload: Boolean = false) {
 
@@ -37,7 +38,10 @@ class AdsInter (val preload: Boolean = false) {
         loadAction = onEvent
         currentUnit = adUnit
 
-        if(!FirebaseManager.rc.useAds && DataManager.user.removeAds && inter != null){
+        val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
+                && !(FirebaseManager.rc.checkBot && Utility.isBot(context))
+
+        if(!isLoadAds || inter != null){
             onEvent?.onLoaded()
             return
         }
@@ -88,7 +92,9 @@ class AdsInter (val preload: Boolean = false) {
     }
 
     fun showInter(activity: Activity, onEvent: AdEvent?) {
-        if(!FirebaseManager.rc.useAds && DataManager.user.removeAds) {
+        val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
+                && !(FirebaseManager.rc.checkBot && Utility.isBot(activity))
+        if(!isLoadAds) {
             onEvent?.onComplete()
             return
         }

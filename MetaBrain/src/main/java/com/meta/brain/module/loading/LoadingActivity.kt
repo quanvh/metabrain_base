@@ -53,7 +53,6 @@ class LoadingActivity : BaseActivity() {
     override fun onStart() {
         super.onStart()
         Utility.setLocale(this)
-        DataManager.user.recoverCount = 0
         checkAds()
     }
 

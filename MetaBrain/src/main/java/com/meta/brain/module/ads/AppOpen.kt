@@ -13,6 +13,7 @@ import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.utils.Utility
 
 class AppOpen {
     companion object {
@@ -26,7 +27,9 @@ class AppOpen {
     private var currentUnit: String = ""
 
     fun loadOpenAd(context: Context,adUnit:String, onEvent: AdEvent?) {
-        if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
+        val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
+                && !(FirebaseManager.rc.checkBot && Utility.isBot(context))
+        if(isLoadAds) {
             if (MetaBrainApp.debug) {
                 Log.d(TAG, "OpenAd call, id: $adUnit")
             }
@@ -77,7 +80,9 @@ class AppOpen {
     }
 
     fun showOpenAd(activity: Activity, onEvent: AdEvent?) {
-        if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
+        val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
+                && !(FirebaseManager.rc.checkBot && Utility.isBot(activity))
+        if(isLoadAds) {
             if (isShowingAd) {
                 if(MetaBrainApp.debug) {
                     Log.d(TAG, "OpenAd is already showing.")
