@@ -42,29 +42,10 @@ android {
         jvmTarget = "17"
     }
 
-    afterEvaluate {
-        publishing {
-            publications {
-                create<MavenPublication>("release") {
-                    from(components["release"])
-
-                    groupId = "com.github.quanvh"
-                    artifactId = "metabrain"
-                    version = "1.0.3"
-                }
-            }
-            repositories {
-                maven {
-                    val githubUser = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER")
-                    val githubToken = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-
-                    url = uri("https://maven.pkg.github.com/quanvh/metabrain_base")
-                    credentials {
-                        username = githubUser
-                        password = githubToken
-                    }
-                }
-            }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 
@@ -73,6 +54,33 @@ android {
         dataBinding = true
         buildConfig = true
         compose = true
+    }
+}
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = "com.github.quanvh"
+                artifactId = "metabrain"
+                version = "1.0.4"
+            }
+        }
+        repositories {
+            maven {
+                val githubUser =
+                    project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER")
+                val githubToken =
+                    project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+
+                url = uri("https://maven.pkg.github.com/quanvh/metabrain_base")
+                credentials {
+                    username = githubUser
+                    password = githubToken
+                }
+            }
+        }
     }
 }
 
@@ -110,9 +118,6 @@ dependencies {
 
     implementation(libs.sdp.android)
     implementation(libs.ssp.android)
-
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
 
     // Firebase BoM
     implementation(platform (libs.firebase.bom))
