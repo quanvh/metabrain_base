@@ -36,6 +36,7 @@ class AdsReward (var preload: Boolean = false){
                 object : RewardedAdLoadCallback() {
                     override fun onAdLoaded(ad: RewardedAd) {
                         FirebaseManager.sendLog("reward_loaded",null)
+                        ad.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,ad.responseInfo)}
                         rewardedAd = ad
                         isLoading = false
                         onEvent?.onLoaded()

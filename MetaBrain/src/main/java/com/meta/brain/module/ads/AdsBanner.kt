@@ -85,6 +85,7 @@ class AdsBanner {
                     }
                 }
             }
+            adView.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,adView.responseInfo) }
         }
     }
 

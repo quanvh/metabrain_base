@@ -8,6 +8,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.OnPaidEventListener
 import com.google.android.gms.ads.appopen.AppOpenAd
 import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback
 import com.meta.brain.module.base.MetaBrainApp
@@ -48,6 +49,7 @@ class AppOpen {
                 object : AppOpenAdLoadCallback() {
                     override fun onAdLoaded(ad: AppOpenAd) {
                         FirebaseManager.sendLog("openAd_loaded",null)
+                        ad.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,ad.responseInfo)}
                         appOpenAd = ad
                         isLoadingAd = false
                         onEvent?.onLoaded()

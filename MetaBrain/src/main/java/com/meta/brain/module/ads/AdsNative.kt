@@ -28,6 +28,7 @@ class AdsNative {
             FirebaseManager.sendLog("native_call",null)
             val builder = AdLoader.Builder(context, adUnit)
             builder.forNativeAd { nativeAd ->
+                nativeAd.setOnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,nativeAd.responseInfo) }
                 currentNativeAd?.destroy()
                 currentNativeAd = nativeAd
                 populateNativeAdView(nativeAd, views)

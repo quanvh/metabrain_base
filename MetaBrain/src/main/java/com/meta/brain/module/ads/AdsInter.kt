@@ -8,6 +8,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.OnPaidEventListener
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.meta.brain.module.base.MetaBrainApp
@@ -59,10 +60,10 @@ class AdsInter (val preload: Boolean = false) {
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
+                    ad.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,ad.responseInfo)}
                     inter = ad
                     adIsLoading = false
                     onEvent?.onLoaded()
-
                     FirebaseManager.sendLog("inter_loaded",null)
                     if (MetaBrainApp.debug) {
                         Log.d(TAG, "Inter Ad was loaded.")
@@ -153,7 +154,7 @@ class AdsInter (val preload: Boolean = false) {
                     }
                 }
             inter?.show(activity)
-        } else{
+            } else{
             onEvent?.onComplete()
             if(preload) loadInter(activity,currentUnit,loadAction)
             if (MetaBrainApp.debug) {

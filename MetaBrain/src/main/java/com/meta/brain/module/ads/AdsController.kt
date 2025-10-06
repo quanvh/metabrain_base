@@ -4,7 +4,12 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.ViewGroup
+import com.appsflyer.AFAdRevenueData
+import com.appsflyer.AppsFlyerLib
+import com.appsflyer.MediationNetwork
+import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.ResponseInfo
 import com.meta.brain.R
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
@@ -13,7 +18,6 @@ import com.meta.brain.module.utils.Utility
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.log
 
 class AdsController () {
 
@@ -224,6 +228,21 @@ class AdsController () {
         // AdsController.loadBanner(this@LoadingActivity,getString(R.string.banner_default),findViewById<FrameLayout>(R.id.ad_test))
         fun loadBanner(context: Context, adUnit:String, container: ViewGroup){
             adsBanner.loadBanner(context,adUnit,container)
+        }
+
+        fun logAdRevenue(adValue: AdValue, responseInfo: ResponseInfo?) {
+                val revenue = adValue.valueMicros / 1000000.0
+                val loadedInfo = responseInfo?.loadedAdapterResponseInfo
+                val data = AFAdRevenueData(
+                    (loadedInfo?.adSourceName ?: "admob").lowercase(),
+                    MediationNetwork.GOOGLE_ADMOB,
+                    adValue.currencyCode,
+                    revenue
+                )
+                val extras: MutableMap<String, Any> = hashMapOf(
+                    "precision" to adValue.precisionType
+                )
+                AppsFlyerLib.getInstance().logAdRevenue(data, extras)
         }
     }
 }
