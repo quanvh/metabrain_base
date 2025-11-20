@@ -9,6 +9,14 @@ import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.utils.Utility
 
+enum class BannerSizeType {
+    BANNER,
+    LARGE_BANNER,
+    FULL_BANNER,
+    MEDIUM_RECTANGLE,
+    ADAPTIVE // Default adaptive banner size
+}
+
 class AdsBanner {
     companion object {
         private const val TAG: String = "[AdsBanner]"
@@ -16,20 +24,24 @@ class AdsBanner {
 
     private var adView: AdView? = null
 
-    fun loadBanner(context: Context, adUnit:String, container: ViewGroup) {
+    /**
+     * Load banner ad with specified size
+     * @param context Context
+     * @param adUnit Ad unit ID
+     * @param container ViewGroup container
+     * @param sizeType Banner size type. If null, uses adaptive banner size
+     */
+    fun loadBanner(context: Context, adUnit:String, container: ViewGroup, sizeType: BannerSizeType? = null) {
         if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
             if (MetaBrainApp.debug) {
-                Log.d(TAG, "Banner Ad call, id: $adUnit")
+                Log.d(TAG, "Banner Ad call, id: $adUnit, sizeType: $sizeType")
             }
             FirebaseManager.sendLog("banner_call",null)
             val adView = AdView(context)
             adView.adUnitId = adUnit
-            adView.setAdSize(
-                AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-                    context,
-                    Utility.getAdWidth(context)
-                )
-            )
+            
+            val adSize = getAdSize(context, sizeType)
+            adView.setAdSize(adSize)
 
             this.adView = adView
 
@@ -86,6 +98,29 @@ class AdsBanner {
                 }
             }
             adView.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,adView.responseInfo) }
+        }
+    }
+
+    /**
+     * Get AdSize based on sizeType parameter
+     * @param context Context for adaptive banner
+     * @param sizeType BannerSizeType enum value
+     * @return AdSize object
+     */
+    private fun getAdSize(context: Context, sizeType: BannerSizeType?): AdSize {
+        return when (sizeType) {
+            BannerSizeType.BANNER -> AdSize.BANNER
+            BannerSizeType.LARGE_BANNER -> AdSize.LARGE_BANNER
+            BannerSizeType.FULL_BANNER -> AdSize.FULL_BANNER
+            BannerSizeType.MEDIUM_RECTANGLE -> AdSize.MEDIUM_RECTANGLE
+            BannerSizeType.ADAPTIVE -> AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                context,
+                Utility.getAdWidth(context)
+            )
+            null -> AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                context,
+                Utility.getAdWidth(context)
+            )
         }
     }
 

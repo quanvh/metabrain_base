@@ -1,5 +1,6 @@
 package com.meta.brain.base
 
+import android.content.Intent
 import com.meta.brain.base.databinding.IntroActivityBinding
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
@@ -16,8 +17,7 @@ class IntroActivity : DataBindActivity<IntroActivityBinding>(R.layout.intro_acti
         }
     }
 
-    fun startHome(){
-//        startActivity(Intent(this, HomeActivity::class.java))
-//        finish()
+    private fun startHome(){
+        startActivity(Intent(this, BannerActivity::class.java))
     }
 }

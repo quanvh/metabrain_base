@@ -4,4 +4,11 @@
     <string name="how_to_work">How it works?</string>
     <string name="scan_tip">The App help you recover deleted photos. The App will show all the images (Deleted and Not Deleted). Just Keep looking and you will find photos you are looking for. Please be patient and wait until it scans all folders and files.</string>
     <string name="let_start">Let\'s Start</string>
+    <string name="banner_demo_title">Banner Demo</string>
+    <string name="banner_placeholder">Banner will appear here</string>
+    <string name="reload_banner">Reload Banner</string>
+    <string name="native_demo_title">Native Demo</string>
+    <string name="native_placeholder">Native ad will appear here</string>
+    <string name="reload_native">Reload Native Ad</string>
+    <string name="open_native_screen">Open Native Ads</string>
 </resources>

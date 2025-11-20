@@ -226,8 +226,8 @@ class AdsController () {
 
         //Demo call banner function
         // AdsController.loadBanner(this@LoadingActivity,getString(R.string.banner_default),findViewById<FrameLayout>(R.id.ad_test))
-        fun loadBanner(context: Context, adUnit:String, container: ViewGroup){
-            adsBanner.loadBanner(context,adUnit,container)
+        fun loadBanner(context: Context, adUnit:String, container: ViewGroup, bannerSizeType: BannerSizeType? = null){
+            adsBanner.loadBanner(context,adUnit,container, bannerSizeType)
         }
 
         fun logAdRevenue(adValue: AdValue, responseInfo: ResponseInfo?) {

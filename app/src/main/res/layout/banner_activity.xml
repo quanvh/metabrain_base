@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="@dimen/_16sdp"
+        android:background="@drawable/bg_onboarding"
+        tools:context=".BannerActivity">
+
+        <TextView
+            android:id="@+id/tv_banner_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/banner_demo_title"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:textSize="@dimen/size_title"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:layout_marginBottom="@dimen/_10sdp" />
+
+        <FrameLayout
+            android:id="@+id/bannerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:padding="@dimen/_10sdp"
+            tools:ignore="MissingConstraints">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/banner_placeholder"
+                android:textColor="@android:color/darker_gray"
+                tools:ignore="RtlHardcoded" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/btnReloadBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/reload_banner"
+            android:textAllCaps="true"
+            android:textSize="@dimen/size_description"
+            android:textColor="@color/greenTick"
+            android:background="@drawable/bg_card_onboarding"
+            android:padding="@dimen/_10sdp" />
+
+        <TextView
+            android:id="@+id/btnOpenNative"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:gravity="center"
+            android:text="@string/open_native_screen"
+            android:textAllCaps="true"
+            android:textSize="@dimen/size_description"
+            android:textColor="@color/greenTick"
+            android:background="@drawable/bg_card_onboarding"
+            android:padding="@dimen/_10sdp" />
+
+    </LinearLayout>
+
+</layout>
+

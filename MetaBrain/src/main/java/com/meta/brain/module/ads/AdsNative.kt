@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.*
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.*
+import com.meta.brain.R
 import com.meta.brain.databinding.NativeDefaultBinding
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
@@ -96,69 +97,85 @@ class AdsNative {
     private fun populateNativeAdView(nativeAd: NativeAd, nativeBinding: NativeAdViews) {
         val nativeAdView = nativeBinding.root
 
-        // Set the media view.
         nativeAdView.mediaView = nativeBinding.adMedia
 
-        // Set other ad assets.
         nativeAdView.headlineView = nativeBinding.adHeadline
+        nativeBinding.adHeadline?.let { headlineView ->
+            headlineView.text = nativeAd.headline
+        }
+
+        nativeAd.mediaContent?.let { mediaContent ->
+            nativeBinding.adMedia?.mediaContent = mediaContent
+        }
+
         nativeAdView.bodyView = nativeBinding.adBody
+        nativeBinding.adBody?.let { bodyView ->
+            if (nativeAd.body == null) {
+                bodyView.visibility = View.INVISIBLE
+            } else {
+                bodyView.visibility = View.VISIBLE
+                bodyView.text = nativeAd.body
+            }
+        }
+
         nativeAdView.callToActionView = nativeBinding.adCallToAction
+        nativeBinding.adCallToAction?.let { ctaView ->
+            if (nativeAd.callToAction == null) {
+                ctaView.visibility = View.INVISIBLE
+            } else {
+                ctaView.visibility = View.VISIBLE
+                ctaView.text = nativeAd.callToAction
+            }
+        }
+
         nativeAdView.iconView = nativeBinding.adAppIcon
+        nativeBinding.adAppIcon?.let { iconView ->
+            if (nativeAd.icon == null) {
+                iconView.visibility = View.GONE
+            } else {
+                iconView.setImageDrawable(nativeAd.icon?.drawable)
+                iconView.visibility = View.VISIBLE
+            }
+        }
+
         nativeAdView.priceView = nativeBinding.adPrice
+        nativeBinding.adPrice?.let { priceView ->
+            if (nativeAd.price == null) {
+                priceView.visibility = View.INVISIBLE
+            } else {
+                priceView.visibility = View.VISIBLE
+                priceView.text = nativeAd.price
+            }
+        }
+
         nativeAdView.starRatingView = nativeBinding.adStars
+        nativeBinding.adStars?.let { starsView ->
+            if (nativeAd.starRating == null) {
+                starsView.visibility = View.INVISIBLE
+            } else {
+                starsView.rating = nativeAd.starRating!!.toFloat()
+                starsView.visibility = View.VISIBLE
+            }
+        }
+
         nativeAdView.storeView = nativeBinding.adStore
+        nativeBinding.adStore?.let { storeView ->
+            if (nativeAd.store == null) {
+                storeView.visibility = View.INVISIBLE
+            } else {
+                storeView.visibility = View.VISIBLE
+                storeView.text = nativeAd.store
+            }
+        }
+
         nativeAdView.advertiserView = nativeBinding.adAdvertiser
-
-        nativeBinding.adHeadline.text = nativeAd.headline
-        nativeAd.mediaContent?.let { nativeBinding.adMedia.mediaContent = it }
-
-        if (nativeAd.body == null) {
-            nativeBinding.adBody.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adBody.visibility = View.VISIBLE
-            nativeBinding.adBody.text = nativeAd.body
-        }
-
-        if (nativeAd.callToAction == null) {
-            nativeBinding.adCallToAction.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adCallToAction.visibility = View.VISIBLE
-            nativeBinding.adCallToAction.text = nativeAd.callToAction
-        }
-
-        if (nativeAd.icon == null) {
-            nativeBinding.adAppIcon.visibility = View.GONE
-        } else {
-            nativeBinding.adAppIcon.setImageDrawable(nativeAd.icon?.drawable)
-            nativeBinding.adAppIcon.visibility = View.VISIBLE
-        }
-
-        if (nativeAd.price == null) {
-            nativeBinding.adPrice.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adPrice.visibility = View.VISIBLE
-            nativeBinding.adPrice.text = nativeAd.price
-        }
-
-        if (nativeAd.store == null) {
-            nativeBinding.adStore.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adStore.visibility = View.VISIBLE
-            nativeBinding.adStore.text = nativeAd.store
-        }
-
-        if (nativeAd.starRating == null) {
-            nativeBinding.adStars.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adStars.rating = nativeAd.starRating!!.toFloat()
-            nativeBinding.adStars.visibility = View.VISIBLE
-        }
-
-        if (nativeAd.advertiser == null) {
-            nativeBinding.adAdvertiser.visibility = View.INVISIBLE
-        } else {
-            nativeBinding.adAdvertiser.text = nativeAd.advertiser
-            nativeBinding.adAdvertiser.visibility = View.VISIBLE
+        nativeBinding.adAdvertiser?.let { advertiserView ->
+            if (nativeAd.advertiser == null) {
+                advertiserView.visibility = View.INVISIBLE
+            } else {
+                advertiserView.text = nativeAd.advertiser
+                advertiserView.visibility = View.VISIBLE
+            }
         }
 
         nativeAdView.setNativeAd(nativeAd)
@@ -182,15 +199,15 @@ class AdsNative {
 
 interface NativeAdViews {
     val root: NativeAdView
-    val adMedia: MediaView
-    val adHeadline: TextView
-    val adBody: TextView
-    val adCallToAction: Button
-    val adAppIcon: ImageView
-    val adPrice: TextView
-    val adStars: RatingBar
-    val adStore: TextView
-    val adAdvertiser: TextView
+    val adMedia: MediaView?
+    val adHeadline: TextView?
+    val adBody: TextView?
+    val adCallToAction: Button?
+    val adAppIcon: ImageView?
+    val adPrice: TextView?
+    val adStars: RatingBar?
+    val adStore: TextView?
+    val adAdvertiser: TextView?
 }
 
 class NativeDefaultBindingAdapter(
@@ -206,4 +223,24 @@ class NativeDefaultBindingAdapter(
     override val adStars get() = b.adStars
     override val adStore get() = b.adStore
     override val adAdvertiser get() = b.adAdvertiser
+}
+
+/**
+ * Generic adapter: dùng cho mọi layout native miễn là các view có id chuẩn:
+ *  - ad_media, ad_headline, ad_body, ad_call_to_action, ad_app_icon,
+ *    ad_price, ad_stars, ad_store, ad_advertiser
+ */
+class GenericNativeAdViews(
+    private val rootView: NativeAdView
+) : NativeAdViews {
+    override val root get() = rootView
+    override val adMedia: MediaView? get() = rootView.findViewById(R.id.ad_media)
+    override val adHeadline: TextView? get() = rootView.findViewById(R.id.ad_headline)
+    override val adBody: TextView? get() = rootView.findViewById(R.id.ad_body)
+    override val adCallToAction: Button? get() = rootView.findViewById(R.id.ad_call_to_action)
+    override val adAppIcon: ImageView? get() = rootView.findViewById(R.id.ad_app_icon)
+    override val adPrice: TextView? get() = rootView.findViewById(R.id.ad_price)
+    override val adStars: RatingBar? get() = rootView.findViewById(R.id.ad_stars)
+    override val adStore: TextView? get() = rootView.findViewById(R.id.ad_store)
+    override val adAdvertiser: TextView? get() = rootView.findViewById(R.id.ad_advertiser)
 }

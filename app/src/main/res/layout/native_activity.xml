@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_onboarding"
+        android:padding="@dimen/_16sdp"
+        tools:context=".NativeAdsActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/tv_native_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/native_demo_title"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:textSize="@dimen/size_title"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:layout_marginBottom="@dimen/_10sdp" />
+
+            <FrameLayout
+                android:id="@+id/nativeContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_20sdp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/native_placeholder"
+                    android:textColor="@android:color/darker_gray"
+                    tools:ignore="RtlHardcoded" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/btnReloadNative"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/reload_native"
+                android:textAllCaps="true"
+                android:textSize="@dimen/size_description"
+                android:textColor="@color/greenTick"
+                android:background="@drawable/bg_card_onboarding"
+                android:padding="@dimen/_10sdp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</layout>
+
