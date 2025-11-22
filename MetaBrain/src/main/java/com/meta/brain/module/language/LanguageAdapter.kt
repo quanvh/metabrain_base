@@ -18,8 +18,11 @@ import com.meta.brain.R
 import com.meta.brain.databinding.LanguageItemBinding
 import com.meta.brain.module.base.BaseViewHolder
 
-class LanguageAdapter(private val context: Context, private val listLanguage: MutableList<LanguageModel>):
-    RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
+class LanguageAdapter(
+    private val context: Context, 
+    private val listLanguage: MutableList<LanguageModel>,
+    private val callback: LanguageAdapterCallBack?
+): RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
 
     var itemPosition: Int = 0
     inner class LanguageAdapterVH(binding: LanguageItemBinding) : BaseViewHolder<LanguageItemBinding>(binding){
@@ -30,6 +33,7 @@ class LanguageAdapter(private val context: Context, private val listLanguage: Mu
                     notifyItemChanged(itemPosition)
                     itemPosition = position
                     notifyItemChanged(position)
+                    callback?.onSelectLanguage(languageModel)
                 }
             }
             if(itemPosition == position){

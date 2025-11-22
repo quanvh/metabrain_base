@@ -74,7 +74,7 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
         }
 
         languageList[0].isSelected = true
-        val languageAdapter = LanguageAdapter(this, languageList)
+        val languageAdapter = LanguageAdapter(this, languageList, this)
 
         binding.recyclerView.adapter = languageAdapter
     }

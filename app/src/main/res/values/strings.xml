@@ -11,4 +11,6 @@
     <string name="native_placeholder">Native ad will appear here</string>
     <string name="reload_native">Reload Native Ad</string>
     <string name="open_native_screen">Open Native Ads</string>
+    <string name="open_inter_screen">Open Inter Ads</string>
+    <string name="open_language_screen">Open Language</string>
 </resources>
