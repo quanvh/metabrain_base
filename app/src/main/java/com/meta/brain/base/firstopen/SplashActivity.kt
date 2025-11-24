@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
  * Extends FOSplashActivity and uses LoadingActivity layout
  */
 @SuppressLint("CustomSplashScreen")
-class FOSplashActivity : FOSplashActivity() {
+class SplashActivity : FOSplashActivity() {
 
     companion object {
         private const val TAG = "[AppFOSplashActivity]"
@@ -71,15 +71,15 @@ class FOSplashActivity : FOSplashActivity() {
             override fun onFetched() {
                 // Ensure we're on main thread for UI operations
                 runOnUiThread {
-                    ump = UMP.getInstance(this@FOSplashActivity)
-                    ump.gatherConsent(this@FOSplashActivity) { consentError ->
+                    ump = UMP.getInstance(this@SplashActivity)
+                    ump.gatherConsent(this@SplashActivity) { consentError ->
                         if (consentError != null) {
                             Log.w(TAG, "${consentError.errorCode}: ${consentError.message}")
                         }
 
                         if (ump.canRequestAds) {
                             // AdsController.initAdmob must be called on main thread
-                            AdsController.initAdmob(this@FOSplashActivity)
+                            AdsController.initAdmob(this@SplashActivity)
                         }
                     }
                 }
@@ -151,8 +151,8 @@ class FOSplashActivity : FOSplashActivity() {
 
         return FOTemplateUiConfig(
             languageUiConfig = LanguageUiConfig(
-                layoutId = com.meta.brain.R.layout.language_activity,
-                itemLayoutId = com.meta.brain.R.layout.language_item,
+                layoutId = R.layout.activity_language,
+                itemLayoutId = R.layout.item_language,
                 listLanguage = languageList,
             )
         )
@@ -205,7 +205,7 @@ class FOSplashActivity : FOSplashActivity() {
      * Override in subclasses to provide actual layout ID
      */
     private fun getLanguageNativeAdLayoutId(): Int {
-        return R.layout.native_no_media_default
+        return R.layout.native_default_no_id_price
     }
 
     private fun checkAds() {

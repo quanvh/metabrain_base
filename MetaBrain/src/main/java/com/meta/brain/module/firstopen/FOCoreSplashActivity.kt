@@ -1,38 +1,41 @@
 package com.meta.brain.module.firstopen
 
 import android.R
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.FrameLayout
-import androidx.activity.ComponentActivity
 import androidx.annotation.CallSuper
+import androidx.annotation.ColorInt
+import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.language.LanguageActivity
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.tasks.await
-import kotlin.time.measureTimedValue
+import java.util.Locale
 
 /**
- * Core splash activity for First Open SDK
+ * Core splash activity for First Open SDK combining previous base logic into one class.
  */
-abstract class FOCoreSplashActivity : CoreFirstOpenActivity() {
+abstract class FOCoreSplashActivity : AppCompatActivity() {
 
     companion object {
         @Deprecated("Use constant value directly")
         const val MAX_TIME_SPLASH_AWAIT = 3000L
     }
 
+    abstract fun updateUI(savedInstanceState: Bundle?)
+
+    @LayoutRes
+    protected abstract fun getLayoutRes(): Int
 
     abstract fun handleRemoteConfig(remoteConfig: FirebaseRemoteConfig)
 
@@ -52,6 +55,13 @@ abstract class FOCoreSplashActivity : CoreFirstOpenActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(getLayoutRes())
+
+        supportActionBar?.hide()
+        actionBar?.hide()
+
+        updateUI(savedInstanceState)
+
         setStatusBarColor(resources.getColor(R.color.white))
 
         try {
@@ -78,6 +88,39 @@ abstract class FOCoreSplashActivity : CoreFirstOpenActivity() {
             e.printStackTrace()
             FirebaseCrashlytics.getInstance().recordException(e)
             startMain()
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val languageCode = try {
+            DataManager.user.language
+        } catch (e: Exception) {
+            "en"
+        }
+
+        val context = updateLocale(newBase, languageCode)
+        super.attachBaseContext(context)
+    }
+
+    private fun updateLocale(context: Context, language: String): Context {
+        return try {
+            val locale = Locale.forLanguageTag(language)
+            Locale.setDefault(locale)
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            context.createConfigurationContext(config)
+        } catch (e: Exception) {
+            Log.e("FOCoreSplashActivity", "Error updating locale: ${e.message}")
+            context
+        }
+    }
+
+    /**
+     * Set status bar color previously provided by CoreFirstOpenActivity.
+     */
+    fun setStatusBarColor(@ColorInt color: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = color
         }
     }
 

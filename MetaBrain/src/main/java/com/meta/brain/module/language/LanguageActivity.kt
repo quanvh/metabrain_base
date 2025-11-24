@@ -76,10 +76,12 @@ class LanguageActivity :
     }
 
     private fun readConfigs() {
-        languageUiConfig = intent.getParcelableExtra<FOTemplateUiConfig>(FOTemplateUiConfig.ARG_BUNDLE)
-            ?.languageUiConfig
-        languageAdConfig = intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
-            ?.languageAdConfig
+        languageUiConfig =
+            intent.getParcelableExtra<FOTemplateUiConfig>(FOTemplateUiConfig.ARG_BUNDLE)
+                ?.languageUiConfig
+        languageAdConfig =
+            intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
+                ?.languageAdConfig
         skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
 
         if (languageUiConfig == null && languageAdConfig == null && intent.hasExtra(LanguageUiConfig::class.java.name)) {
@@ -212,11 +214,7 @@ class LanguageActivity :
             return
         }
 
-        val adapter: NativeAdViews = if (layoutId == com.meta.brain.R.layout.native_default) {
-            NativeDefaultBindingAdapter(NativeDefaultBinding.bind(nativeAdView))
-        } else {
-            GenericNativeAdViews(nativeAdView)
-        }
+        val adapter: NativeAdViews = GenericNativeAdViews(nativeAdView)
 
         AdsController.loadNative(this, adUnit, container, adapter)
     }

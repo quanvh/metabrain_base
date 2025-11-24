@@ -30,7 +30,7 @@
             android:name=".DemoInterstitialActivity"
             android:exported="false" />
         <activity
-            android:name=".firstopen.FOSplashActivity"
+            android:name=".firstopen.SplashActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true">
             <intent-filter>
