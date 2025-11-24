@@ -13,4 +13,5 @@
     <string name="open_native_screen">Open Native Ads</string>
     <string name="open_inter_screen">Open Inter Ads</string>
     <string name="open_language_screen">Open Language</string>
+    <string name="open_language_banner_screen">Open Language banner</string>
 </resources>

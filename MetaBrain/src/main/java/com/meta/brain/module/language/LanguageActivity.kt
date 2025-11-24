@@ -1,34 +1,69 @@
 package com.meta.brain.module.language
 
+import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import androidx.compose.material3.DatePicker
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import com.google.android.gms.ads.nativead.NativeAdView
 import com.meta.brain.R
 import com.meta.brain.databinding.LanguageActivityBinding
-//import com.meta.brain.file.recovery.IntroActivity
-//import com.meta.brain.file.recovery.HomeActivity
+import com.meta.brain.databinding.NativeDefaultBinding
+import com.meta.brain.module.ads.AdsController
+import com.meta.brain.module.ads.GenericNativeAdViews
+import com.meta.brain.module.ads.NativeAdViews
+import com.meta.brain.module.ads.NativeDefaultBindingAdapter
 import com.meta.brain.module.base.DataBindActivity
 import com.meta.brain.module.data.DataManager
-import com.meta.brain.module.utils.PrefUtil
+import com.meta.brain.module.firstopen.*
 import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.invisible
-import com.meta.brain.module.utils.visible
 import java.util.Locale
 
-class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.language_activity),LanguageAdapter.LanguageAdapterCallBack{
+class LanguageActivity :
+    DataBindActivity<LanguageActivityBinding>(R.layout.language_activity),
+    LanguageAdapter.LanguageAdapterCallBack {
+
     companion object {
+        private const val TAG = "[LanguageActivity]"
+        const val RESULT_LANGUAGE_SELECTED = Activity.RESULT_OK
+        const val EXTRA_SELECTED_LANGUAGE_CODE = "extra_selected_language_code"
+        const val EXTRA_SELECTED_LANGUAGE_NAME = "extra_selected_language_name"
+        const val EXTRA_SKIP_NAVIGATE_MAIN = "extra_skip_navigate_main"
 
         val countryName = mutableListOf(
-            "English", "Indonesia", "Portuguese", "Spanish", "India", "Turkey", "France", "Vietnamese", "Russian"
+            "English",
+            "Indonesia",
+            "Portuguese",
+            "Spanish",
+            "India",
+            "Turkey",
+            "France",
+            "Vietnamese",
+            "Russian"
         )
 
         val languageCode = mutableListOf(
-            "en", "in", "pt", "es", "hi", "tr", "fr", "vi", "ru"
+            "en",
+            "in",
+            "pt",
+            "es",
+            "hi",
+            "tr",
+            "fr",
+            "vi",
+            "ru"
         )
     }
+
     private var languageModel: LanguageModel? = null
+    private var languageUiConfig: LanguageUiConfig? = null
+    private var languageAdConfig: LanguageAdConfig? = null
+    private var skipNavigateMain: Boolean = false
 
     override fun initView() {
+        readConfigs()
 
         binding.imgBack.invisible()
         binding.imgBack.setOnClickListener { finish() }
@@ -37,29 +72,93 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
             onDoneClick()
         }
         initLanguageData()
+        loadNativeAdIfNeeded()
+    }
+
+    private fun readConfigs() {
+        languageUiConfig = intent.getParcelableExtra<FOTemplateUiConfig>(FOTemplateUiConfig.ARG_BUNDLE)
+            ?.languageUiConfig
+        languageAdConfig = intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
+            ?.languageAdConfig
+        skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
+
+        if (languageUiConfig == null && languageAdConfig == null && intent.hasExtra(LanguageUiConfig::class.java.name)) {
+            // Legacy direct extras support if needed in future
+            languageUiConfig = intent.getParcelableExtra(LanguageUiConfig::class.java.name)
+            languageAdConfig = intent.getParcelableExtra(LanguageAdConfig::class.java.name)
+        }
     }
 
     private fun onDoneClick() {
         DataManager.user.firstOpen = false
         DataManager.user.chooseLang = true
-        if (languageModel != null) {
-            DataManager.user.language = languageModel!!.languageCode
+        languageModel?.let {
+            DataManager.user.language = it.languageCode
         }
         DataManager.saveData(this)
         Utility.setLocale(this)
-        val activityClass = DataManager.mainActivity
-        if (activityClass != null) {
-            val intent = Intent(this, activityClass)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+        val resultIntent = Intent().apply {
+            putExtra(EXTRA_SELECTED_LANGUAGE_CODE, languageModel?.languageCode)
+            putExtra(EXTRA_SELECTED_LANGUAGE_NAME, languageModel?.name)
+        }
+        setResult(RESULT_LANGUAGE_SELECTED, resultIntent)
 
+        if (skipNavigateMain) {
             finish()
         } else {
-            throw IllegalStateException("MainActivity init first!")
+            val activityClass = DataManager.mainActivity
+            if (activityClass != null) {
+                val intent = Intent(this, activityClass)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            finish()
         }
     }
 
     private fun initLanguageData() {
+        val languageList = buildLanguageList()
+        if (languageList.isEmpty()) {
+            return
+        }
+
+        languageModel = languageList.firstOrNull { it.isSelected } ?: languageList.first()
+
+        val languageAdapter = LanguageAdapter(this, languageList, this)
+        val selectedIndex = languageList.indexOfFirst { it.isSelected }.takeIf { it >= 0 } ?: 0
+        languageAdapter.itemPosition = selectedIndex
+
+        binding.recyclerView.adapter = languageAdapter
+    }
+
+    private fun buildLanguageList(): MutableList<LanguageModel> {
+        val configList = languageUiConfig?.listLanguage
+        val list = if (!configList.isNullOrEmpty()) {
+            configList.mapIndexed { index, model ->
+                LanguageModel(index, model.name, model.languageCode, model.isSelected)
+            }.toMutableList()
+        } else {
+            buildDefaultLanguageList()
+        }
+
+        if (list.isNotEmpty()) {
+            val selectedIndex = list.indexOfFirst { it.isSelected }
+            if (selectedIndex < 0) {
+                val preferredCode = getPreferredLanguageCode()
+                val preferredIndex = list.indexOfFirst { it.languageCode == preferredCode }
+                if (preferredIndex >= 0) {
+                    list.forEach { it.isSelected = false }
+                    list[preferredIndex].isSelected = true
+                } else {
+                    list.first().isSelected = true
+                }
+            }
+        }
+
+        return list
+    }
+
+    private fun buildDefaultLanguageList(): MutableList<LanguageModel> {
         val languageList = mutableListOf<LanguageModel>()
         val userPreferred = getPreferredLanguageCode()
 
@@ -73,10 +172,67 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
             }
         }
 
-        languageList[0].isSelected = true
-        val languageAdapter = LanguageAdapter(this, languageList, this)
+        if (languageList.isNotEmpty()) {
+            languageList[0].isSelected = true
+        }
+        return languageList
+    }
 
-        binding.recyclerView.adapter = languageAdapter
+    private fun loadNativeAdIfNeeded() {
+        val adConfig = languageAdConfig ?: run {
+            binding.adContainer.visibility = View.GONE
+            return
+        }
+        val container = binding.adContainer
+        container.visibility = View.VISIBLE
+
+        val nativeConfig = adConfig.nativeAdConfig
+        val bannerConfig = adConfig.bannerAdConfig
+
+        when {
+            nativeConfig != null -> loadNativeAd(container, nativeConfig)
+            bannerConfig != null -> loadBannerAd(container, bannerConfig)
+            else -> container.visibility = View.GONE
+        }
+    }
+
+    private fun loadNativeAd(container: ViewGroup, nativeConfig: NativeConfig) {
+        val adUnit = nativeConfig.adUnitId
+        if (adUnit.isEmpty()) {
+            container.visibility = View.GONE
+            return
+        }
+
+        val layoutId =
+            if (nativeConfig.layoutId != 0) nativeConfig.layoutId else R.layout.native_default
+
+        val nativeView = LayoutInflater.from(this).inflate(layoutId, container, false)
+        val nativeAdView = nativeView as? NativeAdView ?: run {
+            binding.adContainer.visibility = View.GONE
+            return
+        }
+
+        val adapter: NativeAdViews = if (layoutId == com.meta.brain.R.layout.native_default) {
+            NativeDefaultBindingAdapter(NativeDefaultBinding.bind(nativeAdView))
+        } else {
+            GenericNativeAdViews(nativeAdView)
+        }
+
+        AdsController.loadNative(this, adUnit, container, adapter)
+    }
+
+    private fun loadBannerAd(container: ViewGroup, bannerConfig: BannerConfig) {
+        val adUnit = bannerConfig.adUnitId
+        if (adUnit.isEmpty()) {
+            container.visibility = View.GONE
+            return
+        }
+        AdsController.loadBanner(
+            this,
+            adUnit,
+            container,
+            bannerConfig.sizeType
+        )
     }
 
     private fun setHomeLocale(lang: String) {
@@ -90,12 +246,6 @@ class LanguageActivity : DataBindActivity<LanguageActivityBinding>(R.layout.lang
         val context = baseContext.createConfigurationContext(config)
         applyOverrideConfiguration(config)
 
-//        val refresh = Intent(context, HomeActivity::class.java)
-//        refresh.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-//                Intent.FLAG_ACTIVITY_CLEAR_TASK or
-//                Intent.FLAG_ACTIVITY_NEW_TASK
-
-//        startActivity(refresh)
         finish()
     }
 

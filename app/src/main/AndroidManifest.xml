@@ -18,7 +18,7 @@
         tools:replace="android:allowBackup,android:fullBackupContent,android:dataExtractionRules">
 
         <activity
-            android:name=".BannerActivity"
+            android:name=".ExampleAdsActivity"
             android:exported="false" />
         <activity
             android:name=".NativeAdsActivity"
@@ -29,6 +29,15 @@
         <activity
             android:name=".DemoInterstitialActivity"
             android:exported="false" />
+        <activity
+            android:name=".firstopen.FOSplashActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

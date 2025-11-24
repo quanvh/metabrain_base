@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -64,7 +65,7 @@ afterEvaluate {
 
                 groupId = "com.github.quanvh"
                 artifactId = "metabrain"
-                version = "1.0.7"
+                version = "1.0.8"
             }
         }
         repositories {

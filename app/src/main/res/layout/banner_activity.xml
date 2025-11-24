@@ -11,7 +11,7 @@
         android:gravity="center_horizontal"
         android:padding="@dimen/_16sdp"
         android:background="@drawable/bg_onboarding"
-        tools:context=".BannerActivity">
+        tools:context=".ExampleAdsActivity">
 
         <TextView
             android:id="@+id/tv_banner_title"
@@ -75,6 +75,18 @@
             android:layout_marginTop="@dimen/_12sdp"
             android:gravity="center"
             android:text="@string/open_inter_screen"
+            android:textAllCaps="true"
+            android:textSize="@dimen/size_description"
+            android:textColor="@color/greenTick"
+            android:background="@drawable/bg_card_onboarding"
+            android:padding="@dimen/_10sdp" />
+        <TextView
+            android:id="@+id/btnLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:gravity="center"
+            android:text="@string/open_language_banner_screen"
             android:textAllCaps="true"
             android:textSize="@dimen/size_description"
             android:textColor="@color/greenTick"

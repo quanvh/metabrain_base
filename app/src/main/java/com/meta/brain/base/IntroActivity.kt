@@ -18,6 +18,6 @@ class IntroActivity : DataBindActivity<IntroActivityBinding>(R.layout.intro_acti
     }
 
     private fun startHome(){
-        startActivity(Intent(this, BannerActivity::class.java))
+        startActivity(Intent(this, ExampleAdsActivity::class.java))
     }
 }

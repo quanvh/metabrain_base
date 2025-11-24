@@ -18,14 +18,15 @@ import com.meta.brain.module.utils.Utility
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class AdsController () {
+class AdsController() {
 
     companion object {
         private lateinit var appOpen: AppOpen
         private lateinit var appOpenResume: AppOpen
-        private lateinit var adInter : AdsInter
-        private lateinit var adInterOpen : AdsInter
+        private lateinit var adInter: AdsInter
+        private lateinit var adInterOpen: AdsInter
         private lateinit var adInterResume: AdsInter
         private lateinit var adsReward: AdsReward
         private lateinit var adsNative: AdsNative
@@ -39,17 +40,21 @@ class AdsController () {
         fun isOpenReady(): Boolean {
             return adOpenCount >= 1
         }
+
         fun initAdmob(context: Context) {
             val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
                     && !(FirebaseManager.rc.checkBot && Utility.isBot(context))
 //             Log the Mobile Ads SDK version.
-            if(MetaBrainApp.debug) {
+            if (MetaBrainApp.debug) {
                 Log.d(TAG, "Google Mobile Ads SDK Version: " + MobileAds.getVersion())
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                MobileAds.initialize(context) {
-                    if(MetaBrainApp.debug){
+                MobileAds.initialize(context)
+                // Switch to main thread for all ad loading operations
+                // InterstitialAd.load() and other ad operations must run on main thread
+                withContext(Dispatchers.Main) {
+                    if (MetaBrainApp.debug) {
                         Log.d(TAG, "Init admob success")
                     }
                     //init inter default, call load function if preload
@@ -68,39 +73,39 @@ class AdsController () {
                     adsNative = AdsNative()
                     adsBanner = AdsBanner()
 
-                    fun preloadAds(){
-                        if(preloadInter) {
+                    fun preloadAds() {
+                        if (preloadInter) {
                             loadInter(context, null)
                         }
-                        if(preloadReward) {
+                        if (preloadReward) {
                             loadReward(context, null)
                         }
                     }
 
-                    fun initApp(){
+                    fun initApp() {
                         adOpenCount++
                         preloadAds()
                     }
-                    if(isLoadAds){
+                    if (isLoadAds) {
                         val adOpenEvent = object : AdEvent() {
                             override fun onLoaded() = initApp()
-                            override fun onLoadFail() =initApp()
+                            override fun onLoadFail() = initApp()
                         }
 
-                        if(FirebaseManager.rc.useInterOpen) {
-                            loadInterOpen(context,adOpenEvent)
-                        } else if (FirebaseManager.rc.useOpenSplash){
-                            loadOpenAdSplash(context,adOpenEvent)
+                        if (FirebaseManager.rc.useInterOpen) {
+                            loadInterOpen(context, adOpenEvent)
+                        } else if (FirebaseManager.rc.useOpenSplash) {
+                            loadOpenAdSplash(context, adOpenEvent)
                         } else initApp()
-                    }
-                    else {
+                    } else {
                         initApp()
                     }
                 }
             }
+
         }
 
-        fun loadInter(context: Context,onEvent: AdEvent?) {
+        fun loadInter(context: Context, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterDefault) {
                 var interDefault = context.getString(R.string.inter_default)
                 if (!MetaBrainApp.debug && FirebaseManager.adUnit.interDefault.isNotEmpty()) {
@@ -112,7 +117,7 @@ class AdsController () {
             }
         }
 
-        fun loadInterResume(context: Context,onEvent: AdEvent?) {
+        fun loadInterResume(context: Context, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterResume) {
                 var interResume = context.getString(R.string.inter_resume)
                 if (!MetaBrainApp.debug && FirebaseManager.adUnit.interResume.isNotEmpty()) {
@@ -124,7 +129,7 @@ class AdsController () {
             }
         }
 
-        fun loadInterOpen(context: Context,onEvent: AdEvent?) {
+        fun loadInterOpen(context: Context, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterOpen) {
                 var interOpen = context.getString(R.string.inter_open)
                 if (!MetaBrainApp.debug && FirebaseManager.adUnit.interOpen.isNotEmpty()) {
@@ -136,7 +141,7 @@ class AdsController () {
             }
         }
 
-        fun showInter(activity: Activity, onEvent: AdEvent?){
+        fun showInter(activity: Activity, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterDefault) {
                 adInter.showInter(activity, onEvent)
             } else {
@@ -144,7 +149,7 @@ class AdsController () {
             }
         }
 
-        fun showInterResume(activity: Activity, onEvent: AdEvent?){
+        fun showInterResume(activity: Activity, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterResume) {
                 adInterResume.showInter(activity, onEvent)
             } else {
@@ -152,24 +157,25 @@ class AdsController () {
             }
         }
 
-        fun showInterOpen(activity: Activity, onEvent: AdEvent?){
+        fun showInterOpen(activity: Activity, onEvent: AdEvent?) {
             if (FirebaseManager.rc.useInterOpen) {
-                adInterOpen.showInter(activity,onEvent)
+                adInterOpen.showInter(activity, onEvent)
             } else {
                 onEvent?.onComplete()
             }
         }
 
-        fun loadOpenAdSplash(context: Context,onEvent: AdEvent?){
+        fun loadOpenAdSplash(context: Context, onEvent: AdEvent?) {
             var openSplash = context.getString(R.string.open_splash)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.openSplash.isNotEmpty()){
-               openSplash = FirebaseManager.adUnit.openSplash
+            if (!MetaBrainApp.debug && FirebaseManager.adUnit.openSplash.isNotEmpty()) {
+                openSplash = FirebaseManager.adUnit.openSplash
             }
 
-            appOpen.loadOpenAd(context, openSplash,onEvent)
+            appOpen.loadOpenAd(context, openSplash, onEvent)
         }
-        fun loadOpenAdResume(context: Context, onEvent: AdEvent?){
-            if(FirebaseManager.rc.useOpenResume) {
+
+        fun loadOpenAdResume(context: Context, onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useOpenResume) {
                 var openResume = context.getString(R.string.open_resume)
                 if (!MetaBrainApp.debug && FirebaseManager.adUnit.openResume.isNotEmpty()) {
                     openResume = FirebaseManager.adUnit.openResume
@@ -179,31 +185,33 @@ class AdsController () {
                 onEvent?.onLoaded()
             }
         }
-        fun showOpenAd(activity: Activity, onEvent: AdEvent?){
-            if(FirebaseManager.rc.useOpenSplash) {
+
+        fun showOpenAd(activity: Activity, onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useOpenSplash) {
                 appOpen.showOpenAd(activity, onEvent)
             } else {
                 onEvent?.onComplete()
             }
         }
-        fun showOpenAdResume(activity: Activity, onEvent: AdEvent?){
-            if(FirebaseManager.rc.useOpenResume){
-                appOpenResume.showOpenAd(activity,onEvent)
+
+        fun showOpenAdResume(activity: Activity, onEvent: AdEvent?) {
+            if (FirebaseManager.rc.useOpenResume) {
+                appOpenResume.showOpenAd(activity, onEvent)
             } else {
                 onEvent?.onComplete()
             }
         }
 
-        fun loadReward(context: Context,onEvent: AdEvent?){
+        fun loadReward(context: Context, onEvent: AdEvent?) {
             var rewardDefault = context.getString(R.string.reward_default)
-            if(!MetaBrainApp.debug && FirebaseManager.adUnit.rewardDefault.isNotEmpty()){
+            if (!MetaBrainApp.debug && FirebaseManager.adUnit.rewardDefault.isNotEmpty()) {
                 rewardDefault = FirebaseManager.adUnit.rewardDefault
             }
-            adsReward.loadReward(context,rewardDefault,onEvent)
+            adsReward.loadReward(context, rewardDefault, onEvent)
         }
 
-        fun showReward(activity: Activity, onEvent: AdEvent?){
-            adsReward.showReward(activity,onEvent)
+        fun showReward(activity: Activity, onEvent: AdEvent?) {
+            adsReward.showReward(activity, onEvent)
         }
 
         /* demo call function
@@ -216,43 +224,53 @@ class AdsController () {
          */
 
 
-        fun loadNative(activity: Activity, adUnit:String, container: ViewGroup, adapter: NativeAdViews){
+        fun loadNative(
+            activity: Activity,
+            adUnit: String,
+            container: ViewGroup,
+            adapter: NativeAdViews
+        ) {
             CoroutineScope(Dispatchers.Main).launch {
                 container.removeAllViews()
                 container.addView(adapter.root)
-                adsNative.loadNative(activity,adUnit,adapter,null)
+                adsNative.loadNative(activity, adUnit, adapter, null)
             }
         }
 
         //Demo call banner function
         // AdsController.loadBanner(this@LoadingActivity,getString(R.string.banner_default),findViewById<FrameLayout>(R.id.ad_test))
-        fun loadBanner(context: Context, adUnit:String, container: ViewGroup, bannerSizeType: BannerSizeType? = null){
-            adsBanner.loadBanner(context,adUnit,container, bannerSizeType)
+        fun loadBanner(
+            context: Context,
+            adUnit: String,
+            container: ViewGroup,
+            bannerSizeType: BannerSizeType? = null
+        ) {
+            adsBanner.loadBanner(context, adUnit, container, bannerSizeType)
         }
 
         fun logAdRevenue(adValue: AdValue, responseInfo: ResponseInfo?) {
-                val revenue = adValue.valueMicros / 1000000.0
-                val loadedInfo = responseInfo?.loadedAdapterResponseInfo
-                val data = AFAdRevenueData(
-                    (loadedInfo?.adSourceName ?: "admob").lowercase(),
-                    MediationNetwork.GOOGLE_ADMOB,
-                    adValue.currencyCode,
-                    revenue
-                )
-                val extras: MutableMap<String, Any> = hashMapOf(
-                    "precision" to adValue.precisionType
-                )
-                AppsFlyerLib.getInstance().logAdRevenue(data, extras)
+            val revenue = adValue.valueMicros / 1000000.0
+            val loadedInfo = responseInfo?.loadedAdapterResponseInfo
+            val data = AFAdRevenueData(
+                (loadedInfo?.adSourceName ?: "admob").lowercase(),
+                MediationNetwork.GOOGLE_ADMOB,
+                adValue.currencyCode,
+                revenue
+            )
+            val extras: MutableMap<String, Any> = hashMapOf(
+                "precision" to adValue.precisionType
+            )
+            AppsFlyerLib.getInstance().logAdRevenue(data, extras)
         }
     }
 }
 
-public abstract class AdEvent{
-    open fun onLoaded(){}
-    open fun onLoadFail(){}
-    open fun onShow(){}
-    open fun onShowFail(){}
-    open fun onComplete(){}
-    open fun onImpress(){}
-    open fun onClick(){}
+public abstract class AdEvent {
+    open fun onLoaded() {}
+    open fun onLoadFail() {}
+    open fun onShow() {}
+    open fun onShowFail() {}
+    open fun onComplete() {}
+    open fun onImpress() {}
+    open fun onClick() {}
 }
