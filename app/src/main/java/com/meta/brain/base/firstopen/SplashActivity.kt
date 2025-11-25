@@ -18,15 +18,13 @@ import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.firstopen.FOSplashActivity
 import com.meta.brain.module.firstopen.FOTemplateAdConfig
-import com.meta.brain.module.firstopen.FOTemplateUiConfig
 import com.meta.brain.module.firstopen.LanguageAdConfig
-import com.meta.brain.module.firstopen.LanguageUiConfig
 import com.meta.brain.module.firstopen.NativeConfig
 import com.meta.brain.module.language.LanguageActivity
-import com.meta.brain.module.language.LanguageModel
 import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.showUpdateDialog
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -40,7 +38,6 @@ class SplashActivity : FOSplashActivity() {
 
     companion object {
         private const val TAG = "[AppFOSplashActivity]"
-        private const val MAX_TIME_SPLASH_AWAIT = 3000L
         private const val TOTAL_TIME_WAIT = 30
     }
 
@@ -49,13 +46,9 @@ class SplashActivity : FOSplashActivity() {
     private var timeWait: Int = 0
     private var isStartMain = false
 
-    // Store configs locally since they're private in parent class
-    private val templateUiConfig: FOTemplateUiConfig by lazy {
-        initTemplateUiConfig()
-    }
-
+    // Store ad config locally for passing to LanguageActivity
     private val templateAdConfig: FOTemplateAdConfig by lazy {
-        initTemplateAdConfig()
+        createTemplateAdConfig()
     }
 
     override fun getLayoutRes(): Int {
@@ -112,55 +105,53 @@ class SplashActivity : FOSplashActivity() {
         // Show ads if configured
         if (FirebaseManager.rc.useAds) {
             if (FirebaseManager.rc.useInterOpen) {
+                val adCompleted = CompletableDeferred<Unit>()
                 AdsController.showInterOpen(this, object : AdEvent() {
                     override fun onComplete() {
-                        navigateToNext()
+                        adCompleted.complete(Unit)
                     }
                 })
+                adCompleted.await()
             } else if (FirebaseManager.rc.useOpenSplash) {
+                val adCompleted = CompletableDeferred<Unit>()
                 AdsController.showOpenAd(this, object : AdEvent() {
                     override fun onComplete() {
-                        navigateToNext()
+                        adCompleted.complete(Unit)
                     }
                 })
-            } else {
-                navigateToNext()
+                adCompleted.await()
             }
-        } else {
-            navigateToNext()
+            // If no ads are shown, nextScreen() will be called automatically by parent class
         }
     }
 
-    override fun initTemplateUiConfig(): FOTemplateUiConfig {
-        // Create language list from LanguageActivity data
-        val countryName = listOf(
-            "English", "Indonesia", "Portuguese", "Spanish", "India",
-            "Turkey", "France", "Vietnamese", "Russian"
-        )
-        val languageCode = listOf(
-            "en", "in", "pt", "es", "hi", "tr", "fr", "vi", "ru"
-        )
-
-        val languageList = mutableListOf<LanguageModel>()
-        val userPreferred = getPreferredLanguageCode()
-
-        for (i in languageCode.indices) {
-            val languageModel = LanguageModel(i, countryName[i], languageCode[i], false)
-            languageList.add(languageModel)
+    override fun nextScreen(activity: ComponentActivity, data: Intent) {
+        // This is called by FOSplashActivity after interceptorShowFullScreenAd completes
+        // Handle navigation logic here
+        if (isStartMain) {
+            return
         }
+        isStartMain = true
 
-        return FOTemplateUiConfig(
-            languageUiConfig = LanguageUiConfig(
-                layoutId = R.layout.activity_language,
-                itemLayoutId = R.layout.item_language,
-                listLanguage = languageList,
-            )
-        )
+        if (!isDestroyed) {
+            if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
+                // Navigate to LanguageActivity with ad config
+                val intent = Intent(this, LanguageActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                // Pass ad config via Intent extras
+                intent.putExtra(FOTemplateAdConfig.ARG_BUNDLE, templateAdConfig)
+
+                startActivity(intent)
+                finish()
+            } else {
+                checkUpdateAndNavigate()
+            }
+        }
     }
 
-    override fun initTemplateAdConfig(): FOTemplateAdConfig {
+    private fun createTemplateAdConfig(): FOTemplateAdConfig {
         // Create native ad config for language screen
-        // Override in subclasses to provide actual ad unit IDs
         return FOTemplateAdConfig(
             languageAdConfig = LanguageAdConfig(
                 nativeAdConfig = NativeConfig(
@@ -169,27 +160,6 @@ class SplashActivity : FOSplashActivity() {
                 )
             )
         )
-    }
-
-    override fun nextScreen(activity: ComponentActivity, data: Intent) {
-        // Handle navigation after language selection
-        // This is called by FirstOpenSDK after language is selected
-        // Similar to LoadingActivity.startMain() but after language is already selected
-        // So we go directly to MainActivity (no need to check firstOpen again)
-        if (!isDestroyed) {
-            // Check if mainActivity is set before navigating
-            val activityClass = DataManager.mainActivity
-            if (activityClass != null) {
-                checkUpdateAndNavigate()
-            } else {
-                Log.e(
-                    TAG,
-                    "MainActivity not initialized. Please call DataManager.setStartActivity() first."
-                )
-                // Don't throw exception, just log error
-                // The app will continue to run and mainActivity should be set later
-            }
-        }
     }
 
     /**
@@ -223,29 +193,6 @@ class SplashActivity : FOSplashActivity() {
         }
     }
 
-    private fun navigateToNext() {
-        if (isStartMain) {
-            return
-        }
-        isStartMain = true
-
-        if (!isDestroyed) {
-            if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
-                // Navigate to LanguageActivity with configs
-                val intent = Intent(this, LanguageActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-
-                // Pass configs via Intent extras
-                intent.putExtra(FOTemplateUiConfig.ARG_BUNDLE, templateUiConfig)
-                intent.putExtra(FOTemplateAdConfig.ARG_BUNDLE, templateAdConfig)
-
-                startActivity(intent)
-                finish()
-            } else {
-                checkUpdateAndNavigate()
-            }
-        }
-    }
 
     private fun checkUpdateAndNavigate() {
         var currentCode = 0L
@@ -279,20 +226,6 @@ class SplashActivity : FOSplashActivity() {
                 throw IllegalStateException("MainActivity init first!")
             }
         }
-    }
-
-    private fun getPreferredLanguageCode(): String {
-        val userPreferred = try {
-            DataManager.user.language
-        } catch (e: Exception) {
-            ""
-        }
-
-        if (userPreferred.isEmpty()) {
-            return java.util.Locale.getDefault().language
-        }
-
-        return userPreferred
     }
 }
 

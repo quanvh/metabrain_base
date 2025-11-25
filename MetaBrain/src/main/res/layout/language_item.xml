@@ -6,24 +6,25 @@
     <data/>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_16sdp"
-        android:layout_marginVertical="@dimen/_8sdp"
+        android:layout_marginVertical="@dimen/_4sdp"
         app:cardCornerRadius="@dimen/_5sdp"
-
         app:cardElevation="0dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bg_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_language_item_unselected"
             android:paddingVertical="@dimen/_10sdp">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/countryImage"
-                android:layout_width="@dimen/_32sdp"
-                android:layout_height="@dimen/_32sdp"
+                android:layout_width="@dimen/_28sdp"
+                android:layout_height="@dimen/_28sdp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/_10sdp"
                 android:layout_marginEnd="@dimen/_13sdp"
@@ -61,6 +62,7 @@
                     android:layout_centerInParent="true"
                     android:contentDescription="@null"
                     app:srcCompat="@drawable/ic_round_choose"
+                    android:padding="@dimen/_2ssp"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"/>
                 <ImageView
@@ -69,8 +71,8 @@
                     android:visibility="gone"
                     android:layout_centerInParent="true"
                     app:srcCompat="@drawable/ic_circle_choose"
-                    android:layout_width="@dimen/_12sdp"
-                    android:layout_height="@dimen/_12sdp"/>
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"/>
             </RelativeLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
