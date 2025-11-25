@@ -37,11 +37,13 @@ class LanguageAdapter(
                 }
             }
             if(itemPosition == position){
-                DrawableCompat.setTint(binding.imgRoundChoose.drawable, ContextCompat.getColor(context, R.color.greenChoose))
                 binding.imgCircleChoose.visibility = View.VISIBLE
+                binding.imgRoundChoose.visibility = View.GONE
+                binding.bgLayout.setBackgroundResource(R.drawable.bg_language_item_selected)
             }else{
-                DrawableCompat.setTint(binding.imgRoundChoose.drawable, ContextCompat.getColor(context, R.color.greyChoose))
                 binding.imgCircleChoose.visibility = View.GONE
+                binding.imgRoundChoose.visibility = View.VISIBLE
+                binding.bgLayout.setBackgroundResource(R.drawable.bg_language_item_unselected)
             }
             binding.tvtNameCountry.text = languageModel.name
             Glide.with(context)

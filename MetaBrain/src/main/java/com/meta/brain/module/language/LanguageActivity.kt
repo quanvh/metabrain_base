@@ -58,7 +58,6 @@ class LanguageActivity :
     }
 
     private var languageModel: LanguageModel? = null
-    private var languageUiConfig: LanguageUiConfig? = null
     private var languageAdConfig: LanguageAdConfig? = null
     private var skipNavigateMain: Boolean = false
 
@@ -76,17 +75,13 @@ class LanguageActivity :
     }
 
     private fun readConfigs() {
-        languageUiConfig =
-            intent.getParcelableExtra<FOTemplateUiConfig>(FOTemplateUiConfig.ARG_BUNDLE)
-                ?.languageUiConfig
         languageAdConfig =
             intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
                 ?.languageAdConfig
         skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
 
-        if (languageUiConfig == null && languageAdConfig == null && intent.hasExtra(LanguageUiConfig::class.java.name)) {
-            // Legacy direct extras support if needed in future
-            languageUiConfig = intent.getParcelableExtra(LanguageUiConfig::class.java.name)
+        // Legacy direct extras support if needed in future
+        if (languageAdConfig == null && intent.hasExtra(LanguageAdConfig::class.java.name)) {
             languageAdConfig = intent.getParcelableExtra(LanguageAdConfig::class.java.name)
         }
     }
@@ -134,14 +129,8 @@ class LanguageActivity :
     }
 
     private fun buildLanguageList(): MutableList<LanguageModel> {
-        val configList = languageUiConfig?.listLanguage
-        val list = if (!configList.isNullOrEmpty()) {
-            configList.mapIndexed { index, model ->
-                LanguageModel(index, model.name, model.languageCode, model.isSelected)
-            }.toMutableList()
-        } else {
-            buildDefaultLanguageList()
-        }
+        // Use default language list since LanguageActivity has its own layout
+        val list = buildDefaultLanguageList()
 
         if (list.isNotEmpty()) {
             val selectedIndex = list.indexOfFirst { it.isSelected }
