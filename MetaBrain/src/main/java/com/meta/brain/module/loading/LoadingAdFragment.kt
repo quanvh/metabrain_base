@@ -10,13 +10,27 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.core.graphics.drawable.toDrawable
 import com.meta.brain.R
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.base.MetaBrainApp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+enum class AdType {
+    INTERSTITIAL,
+    REWARDED,
+    APP_OPEN
+}
 
 class LoadingAdFragment: DialogFragment() {
+    
+    private var timeoutJob: Job? = null
+    private var isClosed = false
+    private val TIMEOUT_DURATION = 10000L // 10 seconds
     //Demo call
 //    LoadingAdFragment.newInstance(LoadingAdFragment.Companion.AdType.INTERSTITIAL)
 //    .setOnDone { -> Log.d(TAG, "==== close fragment") }
@@ -37,12 +51,6 @@ class LoadingAdFragment: DialogFragment() {
                     putString(ARG_AD_TYPE, adType.name)
                 }
             }
-        }
-
-        enum class AdType {
-            INTERSTITIAL,
-            REWARDED,
-            APP_OPEN
         }
     }
 
@@ -85,6 +93,7 @@ class LoadingAdFragment: DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        startTimeout()
         when (adType) {
             AdType.INTERSTITIAL -> {
                 if(isResume) {
@@ -141,11 +150,37 @@ class LoadingAdFragment: DialogFragment() {
         }
     }
 
+    private fun startTimeout() {
+        timeoutJob = lifecycleScope.launch {
+            delay(TIMEOUT_DURATION)
+            if (!isClosed && isAdded) {
+                if (MetaBrainApp.debug) {
+                    Log.w(TAG, "Loading ads timeout after 10s, closing fragment")
+                }
+                closeLoadAd()
+            }
+        }
+    }
+    
+    private fun cancelTimeout() {
+        timeoutJob?.cancel()
+        timeoutJob = null
+    }
+
     fun closeLoadAd(){
+        if (isClosed) return
+        isClosed = true
+        cancelTimeout()
+        
         if(MetaBrainApp.debug){
             Log.d(TAG, "Close Loading ads fragment")
         }
         if (isAdded) dismissAllowingStateLoss()
         onDone?.invoke()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        cancelTimeout()
     }
 }

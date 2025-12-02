@@ -30,6 +30,8 @@ class RemoteConfig {
     var timeFirstInter = 45
     var durationInter = 45
     var useLanguageOpen = true
+    // Bật/tắt preload ads cho luồng resume (app vào background sẽ preload cho lần resume tiếp theo)
+    var usePreloadResumeAds = true
 }
 
 class AppVersion{

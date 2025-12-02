@@ -11,10 +11,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
+import com.google.android.gms.ads.AdActivity
 import com.appsflyer.deeplink.DeepLink
 import com.meta.brain.R
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.ads.AdsController
+import com.meta.brain.module.loading.AdType
 import com.meta.brain.module.loading.LoadingAdFragment
 
 
@@ -109,51 +112,105 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
         }
     }
 
-    private val excludedActivities = listOf(
-        "LoadingActivity",
-        "LanguageActivity",
-        "AdActivity"
-    )
+    /**
+     * Danh sách các Activity mặc định không hiển thị quảng cáo khi resume.
+     * Danh sách này luôn được áp dụng.
+     */
+    private fun getDefaultExcludedActivities(): List<Class<out Activity>> {
+        return listOf(
+            com.meta.brain.module.loading.LoadingActivity::class.java,
+            com.meta.brain.module.language.LanguageActivity::class.java,
+            AdActivity::class.java
+        )
+    }
+
+    /**
+     * Danh sách các Activity bổ sung không hiển thị quảng cáo khi resume.
+     * Có thể override method này để thêm các Activity mới vào danh sách loại trừ.
+     * Danh sách mặc định (LoadingActivity, LanguageActivity, AdActivity) sẽ luôn được giữ lại.
+     * 
+     * Ví dụ:
+     * override fun getAdditionalExcludedActivities(): List<Class<out Activity>> {
+     *     return listOf(
+     *         SplashActivity::class.java,
+     *         ProxyBillingActivity::class.java,
+     *         ModuleRate.getFeedbackClazz()
+     *     )
+     * }
+     */
+    protected open fun getAdditionalExcludedActivities(): List<Class<out Activity>> {
+        return emptyList()
+    }
+
+    /**
+     * Lấy danh sách đầy đủ các Activity không hiển thị quảng cáo khi resume.
+     * Bao gồm danh sách mặc định + danh sách bổ sung từ override.
+     */
+    private fun getAllExcludedActivities(): List<Class<out Activity>> {
+        return getDefaultExcludedActivities() + getAdditionalExcludedActivities()
+    }
 
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
-        if(currentActivity !=null) {
-            val activityName = currentActivity!!.localClassName
-            if (!excludedActivities.contains(activityName) && currentActivity is AppCompatActivity) {
-                if(debug) {
-                    Log.d(TAG, "Activity $activityName resumed, show open ads")
-                }
 
-                if (FirebaseManager.rc.useOpenResume) {
-                    LoadingAdFragment.newInstance(LoadingAdFragment.Companion.AdType.APP_OPEN, true)
-                        .show(
-                            (currentActivity as FragmentActivity).supportFragmentManager,
-                            LoadingAdFragment.TAG
-                        )
-                } else if (FirebaseManager.rc.useInterResume) {
-                    LoadingAdFragment.newInstance(
-                        LoadingAdFragment.Companion.AdType.INTERSTITIAL,
-                        true
-                    )
-                        .show(
-                            (currentActivity as FragmentActivity).supportFragmentManager,
-                            LoadingAdFragment.TAG
-                        )
-                }
+        val activity = currentActivity ?: return
+        val activityName = activity.localClassName
 
-            } else {
-                if(debug) {
-                    Log.d(TAG, "Activity $activityName resumed (excluded)")
-                }
-            }
+        // Validate activity type
+        if (activity !is AppCompatActivity) {
+            if (debug) Log.d(TAG, "Activity $activityName resumed (not AppCompatActivity)")
+            return
         }
+
+        // Check excluded list
+        val isExcluded = getAllExcludedActivities().contains(activity.javaClass)
+        if (isExcluded) {
+            if (debug) Log.d(TAG, "Activity $activityName resumed (excluded)")
+            return
+        }
+
+        if (debug) Log.d(TAG, "Activity $activityName resumed, show open ads")
+
+        // Show ad
+        showResumeAd(activity)
     }
+
+    private fun showResumeAd(activity: AppCompatActivity) {
+        val adType = when {
+            FirebaseManager.rc.useOpenResume -> AdType.APP_OPEN
+            FirebaseManager.rc.useInterResume -> AdType.INTERSTITIAL
+            else -> return
+        }
+
+        LoadingAdFragment
+            .newInstance(adType, true)
+            .show(activity.supportFragmentManager, LoadingAdFragment.TAG)
+    }
+
 
     // App đi background
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
         if(debug) {
             Log.d(TAG, "==== App change to background")
+        }
+
+        // Preload ads cho luồng resume (tuỳ chỉnh qua Remote Config)
+        if (FirebaseManager.rc.useAds && FirebaseManager.rc.usePreloadResumeAds) {
+            try {
+                // Preload Open Resume nếu được bật
+                if (FirebaseManager.rc.useOpenResume) {
+                    AdsController.loadOpenAdResume(applicationContext, null)
+                }
+                // Preload Inter Resume nếu được bật
+                if (FirebaseManager.rc.useInterResume) {
+                    AdsController.loadInterResume(applicationContext, null)
+                }
+            } catch (e: Exception) {
+                if (debug) {
+                    Log.e(TAG, "Error while preloading resume ads: ${e.message}")
+                }
+            }
         }
     }
 

@@ -36,7 +36,14 @@ class AppOpen {
             }
             FirebaseManager.sendLog("openAd_load",null)
             currentUnit = adUnit
+
+            // Nếu đang loading hoặc đã có sẵn ad:
+            // - Nếu đã có sẵn ad và có callback → gọi onLoaded() ngay để show liền
+            // - Nếu không có callback (preload) → chỉ return
             if (isLoadingAd || isAdAvailable()) {
+                if (isAdAvailable()) {
+                    onEvent?.onLoaded()
+                }
                 return
             }
 
