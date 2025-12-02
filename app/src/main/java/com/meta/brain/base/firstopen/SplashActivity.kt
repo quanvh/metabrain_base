@@ -41,7 +41,6 @@ class SplashActivity : FOSplashActivity() {
         private const val TOTAL_TIME_WAIT = 30
     }
 
-    private lateinit var ump: UMP
     private var loadingJob: Job? = null
     private var timeWait: Int = 0
     private var isStartMain = false
@@ -57,27 +56,7 @@ class SplashActivity : FOSplashActivity() {
 
     override fun updateUI(savedInstanceState: Bundle?) {
         // Initialize DataManager
-        DataManager.init(this)
 
-        // Initialize Firebase
-        FirebaseManager.initFirebase(this, object : RemoteEvent() {
-            override fun onFetched() {
-                // Ensure we're on main thread for UI operations
-                runOnUiThread {
-                    ump = UMP.getInstance(this@SplashActivity)
-                    ump.gatherConsent(this@SplashActivity) { consentError ->
-                        if (consentError != null) {
-                            Log.w(TAG, "${consentError.errorCode}: ${consentError.message}")
-                        }
-
-                        if (ump.canRequestAds) {
-                            // AdsController.initAdmob must be called on main thread
-                            AdsController.initAdmob(this@SplashActivity)
-                        }
-                    }
-                }
-            }
-        })
     }
 
     override fun handleRemoteConfig(remoteConfig: FirebaseRemoteConfig) {

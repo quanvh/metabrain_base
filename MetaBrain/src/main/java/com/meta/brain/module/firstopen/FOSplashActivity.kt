@@ -16,8 +16,11 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.meta.brain.R
+import com.meta.brain.module.ads.AdsController
+import com.meta.brain.module.ads.UMP
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.language.LanguageActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,6 +36,8 @@ abstract class FOSplashActivity : AppCompatActivity() {
         @Deprecated("Use constant value directly")
         const val MAX_TIME_SPLASH_AWAIT = 3000L
     }
+
+    private lateinit var ump: UMP
 
     abstract fun nextScreen(activity: ComponentActivity, data: Intent)
 
@@ -62,6 +67,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
         actionBar?.hide()
 
         updateUI(savedInstanceState)
+        initData()
 
         setStatusBarColor(resources.getColor(R.color.white))
 
@@ -91,6 +97,30 @@ abstract class FOSplashActivity : AppCompatActivity() {
             FirebaseCrashlytics.getInstance().recordException(e)
             startMain()
         }
+    }
+
+    private fun initData() {
+        DataManager.init(this)
+
+        // Initialize Firebase
+        FirebaseManager.initFirebase(this, object : RemoteEvent() {
+            override fun onFetched() {
+                // Ensure we're on main thread for UI operations
+                runOnUiThread {
+                    ump = UMP.getInstance(this@FOSplashActivity)
+                    ump.gatherConsent(this@FOSplashActivity) { consentError ->
+                        if (consentError != null) {
+                            Log.w(TAG, "${consentError.errorCode}: ${consentError.message}")
+                        }
+
+                        if (ump.canRequestAds) {
+                            // AdsController.initAdmob must be called on main thread
+                            AdsController.initAdmob(this@FOSplashActivity)
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun attachBaseContext(newBase: Context) {
