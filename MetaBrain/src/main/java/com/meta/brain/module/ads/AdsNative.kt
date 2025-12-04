@@ -51,11 +51,13 @@ class AdsNative {
                             Log.d(TAG, "Native Ad loaded, id: $adUnit")
                         }
                         FirebaseManager.sendLog("native_loaded",null)
+                        views.root.visibility = View.VISIBLE
                         onEvent?.onLoaded()
                     }
 
                     override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                         FirebaseManager.sendLog("native_load_fail",null)
+                        views.root.visibility = View.GONE
                         onEvent?.onLoadFail()
                         if (MetaBrainApp.debug) {
                             Log.d(TAG, "Native Ad load failed: " + loadAdError.message)

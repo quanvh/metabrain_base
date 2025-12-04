@@ -228,12 +228,13 @@ class AdsController() {
             activity: Activity,
             adUnit: String,
             container: ViewGroup,
-            adapter: NativeAdViews
+            adapter: NativeAdViews,
+            onEvent: AdEvent? = null
         ) {
             CoroutineScope(Dispatchers.Main).launch {
                 container.removeAllViews()
                 container.addView(adapter.root)
-                adsNative.loadNative(activity, adUnit, adapter, null)
+                adsNative.loadNative(activity, adUnit, adapter, onEvent)
             }
         }
 

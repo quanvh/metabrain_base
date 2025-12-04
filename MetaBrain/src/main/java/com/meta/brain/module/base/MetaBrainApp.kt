@@ -120,6 +120,7 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
         return listOf(
             com.meta.brain.module.loading.LoadingActivity::class.java,
             com.meta.brain.module.language.LanguageActivity::class.java,
+            com.meta.brain.module.firstopen.FOSplashActivity::class.java,
             AdActivity::class.java
         )
     }

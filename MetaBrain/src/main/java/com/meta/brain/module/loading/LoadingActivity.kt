@@ -31,7 +31,7 @@ class LoadingActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.loading_activity);
-
+        sendEvent()
         DataManager.init(this)
 
         FirebaseManager.initFirebase(this, object : RemoteEvent(){
@@ -48,6 +48,10 @@ class LoadingActivity : BaseActivity() {
                 }
             }
         })
+    }
+
+    private fun sendEvent() {
+        FirebaseManager.sendLog("splash_view", null)
     }
 
     override fun onStart() {

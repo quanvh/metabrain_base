@@ -1,7 +1,9 @@
 package com.meta.brain.base
 
+import android.util.Log
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.meta.brain.base.databinding.NativeActivityBinding
+import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.base.DataBindActivity
@@ -29,7 +31,13 @@ class NativeAdsActivity :
             this,
             getString(com.meta.brain.R.string.native_home),
             binding.nativeContainer,
-            nativeAdapter
+            nativeAdapter,
+            object : AdEvent(){
+                override fun onLoaded() {
+                    super.onLoaded()
+                    Log.d("NativeAdsActivity", "onLoaded")
+                }
+            }
         )
     }
 }

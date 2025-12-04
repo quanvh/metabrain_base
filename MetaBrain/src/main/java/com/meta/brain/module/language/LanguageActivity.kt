@@ -3,20 +3,23 @@ package com.meta.brain.module.language
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.meta.brain.R
 import com.meta.brain.databinding.LanguageActivityBinding
-import com.meta.brain.databinding.NativeDefaultBinding
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.ads.NativeAdViews
-import com.meta.brain.module.ads.NativeDefaultBindingAdapter
 import com.meta.brain.module.base.DataBindActivity
 import com.meta.brain.module.data.DataManager
-import com.meta.brain.module.firstopen.*
+import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.firstopen.BannerConfig
+import com.meta.brain.module.firstopen.FOTemplateAdConfig
+import com.meta.brain.module.firstopen.LanguageAdConfig
+import com.meta.brain.module.firstopen.NativeConfig
 import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.invisible
 import java.util.Locale
@@ -68,10 +71,12 @@ class LanguageActivity :
         binding.imgBack.setOnClickListener { finish() }
 
         binding.imgDone.setOnClickListener {
+            FirebaseManager.sendLog("language_click_done", null)
             onDoneClick()
         }
         initLanguageData()
         loadNativeAdIfNeeded()
+        FirebaseManager.sendLog("language_viewed", null)
     }
 
     private fun readConfigs() {
@@ -237,6 +242,9 @@ class LanguageActivity :
     }
 
     override fun onSelectLanguage(languageModel: LanguageModel) {
+        FirebaseManager.sendLog("language_selected_click", Bundle().apply {
+            putString("language_code", languageModel.languageCode)
+        })
         this.languageModel = languageModel
     }
 
