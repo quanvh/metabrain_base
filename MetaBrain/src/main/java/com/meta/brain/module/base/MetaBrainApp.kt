@@ -177,15 +177,42 @@ open class MetaBrainApp: Application(), Application.ActivityLifecycleCallbacks, 
     }
 
     private fun showResumeAd(activity: AppCompatActivity) {
+        // Kiểm tra activity còn hợp lệ không
+        if (activity.isFinishing || activity.isDestroyed) {
+            if (debug) Log.d(TAG, "Activity is finishing or destroyed, skip showing resume ad")
+            return
+        }
+
+        // Kiểm tra FragmentManager còn hợp lệ không
+        val fragmentManager = activity.supportFragmentManager
+        if (fragmentManager.isStateSaved || fragmentManager.isDestroyed) {
+            if (debug) Log.d(TAG, "FragmentManager is destroyed or state saved, skip showing resume ad")
+            return
+        }
+
+        // Kiểm tra xem đã có fragment đang hiển thị chưa
+        val existingFragment = fragmentManager.findFragmentByTag(LoadingAdFragment.TAG)
+        if (existingFragment != null && existingFragment.isAdded) {
+            if (debug) Log.d(TAG, "LoadingAdFragment already showing, skip")
+            return
+        }
+
         val adType = when {
             FirebaseManager.rc.useOpenResume -> AdType.APP_OPEN
             FirebaseManager.rc.useInterResume -> AdType.INTERSTITIAL
             else -> return
         }
 
-        LoadingAdFragment
-            .newInstance(adType, true)
-            .show(activity.supportFragmentManager, LoadingAdFragment.TAG)
+        try {
+            LoadingAdFragment
+                .newInstance(adType, true)
+                .show(fragmentManager, LoadingAdFragment.TAG)
+        } catch (e: IllegalStateException) {
+            // FragmentManager đã bị destroy, log và bỏ qua
+            if (debug) {
+                Log.e(TAG, "Failed to show resume ad: ${e.message}")
+            }
+        }
     }
 
 
