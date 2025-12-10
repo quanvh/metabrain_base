@@ -22,6 +22,7 @@ import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.language.LanguageActivity
+import com.meta.brain.module.language.LanguageModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -57,6 +58,16 @@ abstract class FOSplashActivity : AppCompatActivity() {
 
     open suspend fun interceptorShowFullScreenAd() {
         // Override in subclasses
+    }
+
+    /**
+     * Initialize template UI configuration for LanguageActivity
+     * Override in subclasses to provide custom UI configurations
+     * @return FOTemplateUiConfig or null if using default UI
+     */
+    open fun initTemplateUiConfig(): FOTemplateUiConfig? {
+        // Override in subclasses to provide custom UI config
+        return null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,6 +172,12 @@ abstract class FOSplashActivity : AppCompatActivity() {
             if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
                 val intent = Intent(this, LanguageActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                // Pass UI config if available
+                val uiConfig = initTemplateUiConfig()
+                if (uiConfig != null) {
+                    intent.putExtra(FOTemplateUiConfig.ARG_BUNDLE, uiConfig)
+                }
 
                 startActivity(intent)
             } else {

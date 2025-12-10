@@ -18,9 +18,12 @@ import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.firstopen.FOSplashActivity
 import com.meta.brain.module.firstopen.FOTemplateAdConfig
+import com.meta.brain.module.firstopen.FOTemplateUiConfig
 import com.meta.brain.module.firstopen.LanguageAdConfig
+import com.meta.brain.module.firstopen.LanguageUiConfig
 import com.meta.brain.module.firstopen.NativeConfig
 import com.meta.brain.module.language.LanguageActivity
+import com.meta.brain.module.language.LanguageModel
 import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.showUpdateDialog
 import kotlinx.coroutines.Job
@@ -75,6 +78,10 @@ class SplashActivity : FOSplashActivity() {
         checkAds()
     }
 
+    private val templateUiConfig by lazy {
+        initTemplateUiConfig()
+    }
+
     override suspend fun interceptorShowFullScreenAd() {
         // Wait for ads to be ready (already started in afterFetchRemote)
         while (loadingJob != null) {
@@ -114,12 +121,17 @@ class SplashActivity : FOSplashActivity() {
 
         if (!isDestroyed) {
             if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
-                // Navigate to LanguageActivity with ad config
+                // Navigate to LanguageActivity with ad config and UI config
                 val intent = Intent(this, LanguageActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
                 // Pass ad config via Intent extras
                 intent.putExtra(FOTemplateAdConfig.ARG_BUNDLE, templateAdConfig)
+
+                // Pass UI config if available
+                templateUiConfig?.let {
+                    intent.putExtra(FOTemplateUiConfig.ARG_BUNDLE, it)
+                }
 
                 startActivity(intent)
                 finish()
@@ -155,6 +167,52 @@ class SplashActivity : FOSplashActivity() {
      */
     private fun getLanguageNativeAdLayoutId(): Int {
         return R.layout.native_default_no_id_price
+    }
+
+    override fun initTemplateUiConfig(): FOTemplateUiConfig? {
+        // Override this method to provide custom UI configuration
+        val listLanguage = buildLanguageList()
+        val layoutId = R.layout.language_activity_custom
+        val itemLayoutId = R.layout.language_item
+        val languageUiConfig = LanguageUiConfig(
+            layoutId = layoutId,
+            itemLayoutId = itemLayoutId,
+            listLanguage = listLanguage
+        )
+        return FOTemplateUiConfig(languageUiConfig = languageUiConfig)
+    }
+
+    /**
+     * Build language list for LanguageActivity
+     * Override in subclasses to provide custom language list
+     */
+    protected open fun buildLanguageList(): List<LanguageModel> {
+        // Default implementation using LanguageActivity's default languages
+        val languageList = mutableListOf<LanguageModel>()
+        val userPreferred = DataManager.user.language.ifEmpty { 
+            java.util.Locale.getDefault().language 
+        }
+
+        for (i in LanguageActivity.languageCode.indices) {
+            val languageModel = LanguageModel(
+                id = i,
+                name = LanguageActivity.countryName[i],
+                languageCode = LanguageActivity.languageCode[i],
+                isSelected = LanguageActivity.languageCode[i] == userPreferred
+            )
+            if (languageModel.isSelected) {
+                languageList.add(0, languageModel)
+            } else {
+                languageList.add(languageModel)
+            }
+        }
+
+        // Ensure at least one is selected
+        if (languageList.isNotEmpty() && languageList.none { it.isSelected }) {
+            languageList[0].isSelected = true
+        }
+
+        return languageList
     }
 
     private fun checkAds() {

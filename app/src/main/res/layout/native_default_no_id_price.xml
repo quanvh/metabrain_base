@@ -73,7 +73,7 @@
         <com.google.android.gms.ads.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_88sdp"
+            android:layout_height="@dimen/_120sdp"
             android:layout_gravity="center"
             android:layout_marginTop="@dimen/_12sdp"
             android:layout_marginHorizontal="@dimen/_16sdp"

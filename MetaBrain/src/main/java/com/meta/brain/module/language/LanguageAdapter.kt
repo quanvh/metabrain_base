@@ -5,8 +5,10 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -15,41 +17,50 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import androidx.core.net.toUri
 import com.meta.brain.R
-import com.meta.brain.databinding.LanguageItemBinding
-import com.meta.brain.module.base.BaseViewHolder
+import de.hdodenhof.circleimageview.CircleImageView
 
 class LanguageAdapter(
     private val context: Context, 
     private val listLanguage: MutableList<LanguageModel>,
-    private val callback: LanguageAdapterCallBack?
+    private val callback: LanguageAdapterCallBack?,
+    @LayoutRes private val customItemLayoutId: Int = 0
 ): RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
 
     var itemPosition: Int = 0
-    inner class LanguageAdapterVH(binding: LanguageItemBinding) : BaseViewHolder<LanguageItemBinding>(binding){
-        fun onBind(languageModel: LanguageModel, position: Int){
-            binding.root.setOnClickListener {
+    
+    inner class LanguageAdapterVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val bgLayout: ConstraintLayout = itemView.findViewById(R.id.bg_layout)
+        private val imgCircleChoose: ImageView = itemView.findViewById(R.id.imgCircleChoose)
+        private val imgRoundChoose: ImageView = itemView.findViewById(R.id.imgRoundChoose)
+        private val tvtNameCountry: TextView = itemView.findViewById(R.id.tvtNameCountry)
+        private val countryImage: CircleImageView = itemView.findViewById(R.id.countryImage)
+        
+        fun onBind(languageModel: LanguageModel, position: Int) {
+            itemView.setOnClickListener {
                 languageModel.isSelected = !languageModel.isSelected
-                if(itemPosition != position){
+                if (itemPosition != position) {
                     notifyItemChanged(itemPosition)
                     itemPosition = position
                     notifyItemChanged(position)
                     callback?.onSelectLanguage(languageModel)
                 }
             }
-            if(itemPosition == position){
-                binding.imgCircleChoose.visibility = View.VISIBLE
-                binding.imgRoundChoose.visibility = View.GONE
-                binding.bgLayout.setBackgroundResource(R.drawable.bg_language_item_selected)
-            }else{
-                binding.imgCircleChoose.visibility = View.GONE
-                binding.imgRoundChoose.visibility = View.VISIBLE
-                binding.bgLayout.setBackgroundResource(R.drawable.bg_language_item_unselected)
+            
+            if (itemPosition == position) {
+                imgCircleChoose.visibility = View.VISIBLE
+                imgRoundChoose.visibility = View.GONE
+                bgLayout.setBackgroundResource(R.drawable.bg_language_item_selected)
+            } else {
+                imgCircleChoose.visibility = View.GONE
+                imgRoundChoose.visibility = View.VISIBLE
+                bgLayout.setBackgroundResource(R.drawable.bg_language_item_unselected)
             }
-            binding.tvtNameCountry.text = languageModel.name
+            
+            tvtNameCountry.text = languageModel.name
+            
             Glide.with(context)
                 .load("file:///android_asset/flags/${languageModel.languageCode}.png".toUri())
                 .listener(object : RequestListener<Drawable?> {
-
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
@@ -69,18 +80,18 @@ class LanguageAdapter(
                         return false
                     }
                 })
-                .into(binding.countryImage)
+                .into(countryImage)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LanguageAdapterVH {
-        return LanguageAdapterVH(
-            LanguageItemBinding.inflate(
-                LayoutInflater.from(context),
-                parent,
-                false
-            )
-        )
+        val layoutId = if (customItemLayoutId != 0) {
+            customItemLayoutId
+        } else {
+            R.layout.language_item
+        }
+        val view = LayoutInflater.from(context).inflate(layoutId, parent, false)
+        return LanguageAdapterVH(view)
     }
 
     override fun onBindViewHolder(holder: LanguageAdapterVH, position: Int) {

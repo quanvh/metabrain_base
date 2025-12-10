@@ -7,7 +7,7 @@ import androidx.databinding.ViewDataBinding
 
 abstract class DataBindActivity<DB : ViewDataBinding>(@LayoutRes val layout: Int): BaseActivity(){
 
-    val binding by lazy {
+    open val binding by lazy {
         DataBindingUtil.setContentView(this, layout) as DB
     }
 

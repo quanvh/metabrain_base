@@ -8,24 +8,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.ads.nativead.NativeAdView
+import android.widget.ImageView
+import android.widget.FrameLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.meta.brain.R
-import com.meta.brain.databinding.LanguageActivityBinding
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.ads.NativeAdViews
-import com.meta.brain.module.base.DataBindActivity
+import com.meta.brain.module.base.BaseActivity
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firstopen.BannerConfig
 import com.meta.brain.module.firstopen.FOTemplateAdConfig
+import com.meta.brain.module.firstopen.FOTemplateUiConfig
 import com.meta.brain.module.firstopen.LanguageAdConfig
+import com.meta.brain.module.firstopen.LanguageUiConfig
 import com.meta.brain.module.firstopen.NativeConfig
 import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.invisible
 import java.util.Locale
 
 class LanguageActivity :
-    DataBindActivity<LanguageActivityBinding>(R.layout.language_activity),
+    BaseActivity(),
     LanguageAdapter.LanguageAdapterCallBack {
 
     companion object {
@@ -62,15 +66,72 @@ class LanguageActivity :
 
     private var languageModel: LanguageModel? = null
     private var languageAdConfig: LanguageAdConfig? = null
+    private var languageUiConfig: LanguageUiConfig? = null
     private var skipNavigateMain: Boolean = false
 
-    override fun initView() {
+    // Views - using findViewById
+    private lateinit var imgBack: ImageView
+    private lateinit var imgDone: ImageView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adContainer: FrameLayout
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Read configs first to get custom layout
+        readConfigsEarly()
+        
+        // Set content view with layout from config or default
+        val layoutToUse = if (languageUiConfig?.layoutId != null && languageUiConfig!!.layoutId != 0) {
+            languageUiConfig!!.layoutId
+        } else {
+            R.layout.language_activity
+        }
+        setContentView(layoutToUse)
+        
+        // Initialize views using findViewById
+        initViews()
+        
+        // Initialize UI
+        initView()
+    }
+
+    private fun readConfigsEarly() {
+        languageAdConfig =
+            intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
+                ?.languageAdConfig
+        skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
+
+        // Legacy direct extras support if needed in future
+        if (languageAdConfig == null && intent.hasExtra(LanguageAdConfig::class.java.name)) {
+            languageAdConfig = intent.getParcelableExtra(LanguageAdConfig::class.java.name)
+        }
+
+        // Read UI config
+        val templateUiConfig =
+            intent.getParcelableExtra<FOTemplateUiConfig>(FOTemplateUiConfig.ARG_BUNDLE)
+        languageUiConfig = templateUiConfig?.languageUiConfig
+
+        // Legacy direct extras support if needed in future
+        if (languageUiConfig == null && intent.hasExtra(LanguageUiConfig::class.java.name)) {
+            languageUiConfig = intent.getParcelableExtra(LanguageUiConfig::class.java.name)
+        }
+    }
+
+    private fun initViews() {
+        imgBack = findViewById(R.id.imgBack)
+        imgDone = findViewById(R.id.imgDone)
+        recyclerView = findViewById(R.id.recyclerView)
+        adContainer = findViewById(R.id.adContainer)
+    }
+
+    private fun initView() {
         readConfigs()
 
-        binding.imgBack.invisible()
-        binding.imgBack.setOnClickListener { finish() }
+        imgBack.invisible()
+        imgBack.setOnClickListener { finish() }
 
-        binding.imgDone.setOnClickListener {
+        imgDone.setOnClickListener {
             FirebaseManager.sendLog("language_click_done", null)
             onDoneClick()
         }
@@ -80,14 +141,18 @@ class LanguageActivity :
     }
 
     private fun readConfigs() {
-        languageAdConfig =
-            intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
-                ?.languageAdConfig
-        skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
+        // Configs are already read in readConfigsEarly(), but keep this for compatibility
+        // Only read if not already read
+        if (languageAdConfig == null) {
+            languageAdConfig =
+                intent.getParcelableExtra<FOTemplateAdConfig>(FOTemplateAdConfig.ARG_BUNDLE)
+                    ?.languageAdConfig
+            skipNavigateMain = intent.getBooleanExtra(EXTRA_SKIP_NAVIGATE_MAIN, false)
 
-        // Legacy direct extras support if needed in future
-        if (languageAdConfig == null && intent.hasExtra(LanguageAdConfig::class.java.name)) {
-            languageAdConfig = intent.getParcelableExtra(LanguageAdConfig::class.java.name)
+            // Legacy direct extras support if needed in future
+            if (languageAdConfig == null && intent.hasExtra(LanguageAdConfig::class.java.name)) {
+                languageAdConfig = intent.getParcelableExtra(LanguageAdConfig::class.java.name)
+            }
         }
     }
 
@@ -126,16 +191,26 @@ class LanguageActivity :
 
         languageModel = languageList.firstOrNull { it.isSelected } ?: languageList.first()
 
-        val languageAdapter = LanguageAdapter(this, languageList, this)
+        // Use custom item layout if provided in UI config
+        val itemLayoutId = languageUiConfig?.itemLayoutId
+        val languageAdapter = if (itemLayoutId != null && itemLayoutId != 0) {
+            LanguageAdapter(this, languageList, this, itemLayoutId)
+        } else {
+            LanguageAdapter(this, languageList, this)
+        }
         val selectedIndex = languageList.indexOfFirst { it.isSelected }.takeIf { it >= 0 } ?: 0
         languageAdapter.itemPosition = selectedIndex
 
-        binding.recyclerView.adapter = languageAdapter
+        recyclerView.adapter = languageAdapter
     }
 
     private fun buildLanguageList(): MutableList<LanguageModel> {
-        // Use default language list since LanguageActivity has its own layout
-        val list = buildDefaultLanguageList()
+        // Use language list from UI config if provided, otherwise use default
+        val list = if (languageUiConfig?.listLanguage != null && languageUiConfig!!.listLanguage.isNotEmpty()) {
+            languageUiConfig!!.listLanguage.toMutableList()
+        } else {
+            buildDefaultLanguageList()
+        }
 
         if (list.isNotEmpty()) {
             val selectedIndex = list.indexOfFirst { it.isSelected }
@@ -176,19 +251,18 @@ class LanguageActivity :
 
     private fun loadNativeAdIfNeeded() {
         val adConfig = languageAdConfig ?: run {
-            binding.adContainer.visibility = View.GONE
+            adContainer.visibility = View.GONE
             return
         }
-        val container = binding.adContainer
-        container.visibility = View.VISIBLE
+        adContainer.visibility = View.VISIBLE
 
         val nativeConfig = adConfig.nativeAdConfig
         val bannerConfig = adConfig.bannerAdConfig
 
         when {
-            nativeConfig != null -> loadNativeAd(container, nativeConfig)
-            bannerConfig != null -> loadBannerAd(container, bannerConfig)
-            else -> container.visibility = View.GONE
+            nativeConfig != null -> loadNativeAd(adContainer, nativeConfig)
+            bannerConfig != null -> loadBannerAd(adContainer, bannerConfig)
+            else -> adContainer.visibility = View.GONE
         }
     }
 
@@ -204,7 +278,7 @@ class LanguageActivity :
 
         val nativeView = LayoutInflater.from(this).inflate(layoutId, container, false)
         val nativeAdView = nativeView as? NativeAdView ?: run {
-            binding.adContainer.visibility = View.GONE
+            adContainer.visibility = View.GONE
             return
         }
 
