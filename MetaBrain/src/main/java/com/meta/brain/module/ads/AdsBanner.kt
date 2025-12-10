@@ -8,6 +8,10 @@ import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.utils.Utility
+import com.meta.brain.module.utils.debugLog
+import com.meta.brain.module.utils.gone
+import com.meta.brain.module.utils.invisible
+import com.meta.brain.module.utils.visible
 
 enum class BannerSizeType {
     BANNER,
@@ -31,75 +35,65 @@ class AdsBanner {
      * @param container ViewGroup container
      * @param sizeType Banner size type. If null, uses adaptive banner size
      */
-    fun loadBanner(context: Context, adUnit:String, container: ViewGroup, sizeType: BannerSizeType? = null) {
-        if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
-            if (MetaBrainApp.debug) {
-                Log.d(TAG, "Banner Ad call, id: $adUnit, sizeType: $sizeType")
-            }
-            FirebaseManager.sendLog("banner_call",null)
-            val adView = AdView(context)
-            adView.adUnitId = adUnit
-            
-            val adSize = getAdSize(context, sizeType)
-            adView.setAdSize(adSize)
+    fun loadBanner(
+        context: Context,
+        adUnit: String,
+        container: ViewGroup,
+        sizeType: BannerSizeType? = null
+    ) {
 
-            this.adView = adView
-
+        if (!FirebaseManager.rc.useAds || DataManager.user.removeAds) {
             container.removeAllViews()
-            container.addView(adView)
-
-            val adRequest = AdRequest.Builder().build()
-            adView.loadAd(adRequest)
-
-            adView.adListener = object : AdListener() {
-                override fun onAdClicked() {
-                    // Code to be executed when the user clicks on an ad.
-                    if (MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ad click.")
-                    }
-                }
-
-                override fun onAdClosed() {
-                    // Code to be executed when the user is about to return
-                    // to the app after tapping on an ad.
-                    if (MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ad closed.")
-                    }
-                }
-
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    if(MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ads load fail: " + adError.message)
-                    }
-                    FirebaseManager.sendLog("banner_load_fail",null)
-                }
-
-                override fun onAdImpression() {
-                    // Code to be executed when an impression is recorded
-                    // for an ad.
-                    if (MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ad impress.")
-                    }
-                }
-
-                override fun onAdLoaded() {
-                    if(MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ads loaded")
-                    }
-                    FirebaseManager.sendLog("banner_loaded",null)
-                }
-
-                override fun onAdOpened() {
-                    // Code to be executed when an ad opens an overlay that
-                    // covers the screen.
-                    if (MetaBrainApp.debug) {
-                        Log.d(TAG, "Banner Ad open cover screen.")
-                    }
-                }
-            }
-            adView.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,adView.responseInfo) }
+            container.gone()
+            return
         }
+
+        debugLog(TAG, "Banner call, id=$adUnit, sizeType=$sizeType")
+        FirebaseManager.sendLog("banner_call", null)
+
+        // Create the new banner but don’t remove the old one
+        val newBanner = AdView(context).apply {
+            adUnitId = adUnit
+            setAdSize(getAdSize(context, sizeType))
+        }
+
+        //  Replace when the new banner is loaded.
+        newBanner.adListener = object : AdListener() {
+
+            override fun onAdLoaded() {
+                debugLog(TAG, "Banner loaded")
+                FirebaseManager.sendLog("banner_loaded", null)
+
+                // delete banner old and change banner new
+                adView?.destroy()
+                container.removeAllViews()
+                container.addView(newBanner)
+
+                // update
+                adView = newBanner
+            }
+
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                debugLog(TAG, "Banner load fail: ${error.message}")
+                FirebaseManager.sendLog("banner_load_fail", null)
+            }
+
+            override fun onAdClicked() = debugLog(TAG, "Banner clicked")
+            override fun onAdImpression() = debugLog(TAG, "Banner impression")
+            override fun onAdOpened() = debugLog(TAG, "Banner open overlay")
+            override fun onAdClosed() = debugLog(TAG, "Banner closed")
+        }
+
+        newBanner.onPaidEventListener =
+            OnPaidEventListener { adValue ->
+                AdsController.logAdRevenue(adValue, newBanner.responseInfo)
+            }
+
+        // Load ad (cái cũ vẫn hiển thị trong lúc tải)
+        newBanner.loadAd(AdRequest.Builder().build())
     }
+
+
 
     /**
      * Get AdSize based on sizeType parameter
@@ -117,6 +111,7 @@ class AdsBanner {
                 context,
                 Utility.getAdWidth(context)
             )
+
             null -> AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
                 context,
                 Utility.getAdWidth(context)

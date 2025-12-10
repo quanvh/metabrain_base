@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.*
@@ -12,6 +13,9 @@ import com.meta.brain.databinding.NativeDefaultBinding
 import com.meta.brain.module.base.MetaBrainApp
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
+import com.meta.brain.module.utils.debugLog
+import com.meta.brain.module.utils.gone
+import com.meta.brain.module.utils.visible
 
 class AdsNative {
     companion object {
@@ -20,80 +24,86 @@ class AdsNative {
 
     private var currentNativeAd: NativeAd? = null
 
-    fun loadNative(context: Context, adUnit: String, views: NativeAdViews, onEvent: AdEvent?) {
-        if(FirebaseManager.rc.useAds && !DataManager.user.removeAds) {
-            if (MetaBrainApp.debug) {
-                Log.d(TAG, "Native Ad call, id: $adUnit")
-            }
+    fun loadNative(
+        context: Context,
+        adUnit: String,
+        views: NativeAdViews,
+        onEvent: AdEvent?,
+        container: ViewGroup
+    ) {
+        // Tắt ads
+        if (!FirebaseManager.rc.useAds || DataManager.user.removeAds) {
+            views.root.gone()
+            onEvent?.onLoaded()
+            return
+        }
 
-            FirebaseManager.sendLog("native_call",null)
-            val builder = AdLoader.Builder(context, adUnit)
-            builder.forNativeAd { nativeAd ->
-                nativeAd.setOnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,nativeAd.responseInfo) }
+        if (MetaBrainApp.debug) Log.d(TAG, "Native Ad call, id: $adUnit")
+        FirebaseManager.sendLog("native_call", null)
+
+        val adLoader = AdLoader.Builder(context, adUnit)
+            .forNativeAd { nativeAd ->
+                nativeAd.setOnPaidEventListener { adValue ->
+                    AdsController.logAdRevenue(adValue, nativeAd.responseInfo)
+                }
+
                 currentNativeAd?.destroy()
                 currentNativeAd = nativeAd
                 populateNativeAdView(nativeAd, views)
             }
-
-            val videoOptions =
-                VideoOptions.Builder()
-                    .setStartMuted(false)
+            .withNativeAdOptions(
+                NativeAdOptions.Builder()
+                    .setVideoOptions(
+                        VideoOptions.Builder()
+                            .setStartMuted(false)
+                            .build()
+                    )
                     .build()
+            )
+            .withAdListener(object : AdListener() {
 
-            val adOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+                override fun onAdLoaded() {
+                    debugLog(TAG,"Native Ad loaded, id: $adUnit")
+                    FirebaseManager.sendLog("native_loaded", null)
 
-            builder.withNativeAdOptions(adOptions)
-
-            val adLoader = builder.withAdListener(
-                object : AdListener() {
-                    override fun onAdLoaded() {
-                        if (MetaBrainApp.debug) {
-                            Log.d(TAG, "Native Ad loaded, id: $adUnit")
-                        }
-                        FirebaseManager.sendLog("native_loaded",null)
-                        views.root.visibility = View.VISIBLE
-                        onEvent?.onLoaded()
+                    views.root.visible()
+                    container.run {
+                        removeAllViews()
+                        addView(views.root)
                     }
 
-                    override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                        FirebaseManager.sendLog("native_load_fail",null)
-                        views.root.visibility = View.GONE
-                        onEvent?.onLoadFail()
-                        if (MetaBrainApp.debug) {
-                            Log.d(TAG, "Native Ad load failed: " + loadAdError.message)
+                    onEvent?.onLoaded()
+                }
 
-                            val error =
-                                """domain: ${loadAdError.domain}, code: ${loadAdError.code}, message: ${loadAdError.message}""""
-                            Toast.makeText(
-                                context as Activity,
-                                "Failed to load native ad with error $error",
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    FirebaseManager.sendLog("native_load_fail", null)
+                    views.root.gone()
+                    container.gone()
+                    onEvent?.onLoadFail()
+
+                    debugLog(TAG,"Native Ad load failed: ${loadAdError.message}") {
+                        val error = "domain=${loadAdError.domain}, code=${loadAdError.code}, message=${loadAdError.message}"
+                        (context as? Activity)?.let {
+                            Toast.makeText(it, "Failed to load native ad: $error", Toast.LENGTH_SHORT).show()
                         }
                     }
+                }
 
+                override fun onAdImpression() {
+                    debugLog(TAG,"Native Ad impress, id: $adUnit")
+                    FirebaseManager.sendLog("native_impress", null)
+                    onEvent?.onImpress()
+                }
 
-                    override fun onAdImpression() {
-                        if (MetaBrainApp.debug) {
-                            Log.d(TAG, "Native Ad impress, id: $adUnit")
-                        }
-                        FirebaseManager.sendLog("native_impress",null)
-                        onEvent?.onImpress()
-                    }
+                override fun onAdClicked() {
+                    debugLog(TAG,"Native Ad clicked, id: $adUnit")
+                    FirebaseManager.sendLog("native_click", null)
+                    onEvent?.onClick()
+                }
+            })
+            .build()
 
-                    override fun onAdClicked() {
-                        if (MetaBrainApp.debug) {
-                            Log.d(TAG, "Native Ad clicked, id: $adUnit")
-                        }
-                        FirebaseManager.sendLog("native_click",null)
-                        onEvent?.onClick()
-                    }
-                }).build()
-
-            adLoader.loadAd(AdRequest.Builder().build())
-        } else {
-            onEvent?.onLoaded()
-        }
+        adLoader.loadAd(AdRequest.Builder().build())
     }
 
     private fun populateNativeAdView(nativeAd: NativeAd, nativeBinding: NativeAdViews) {

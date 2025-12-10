@@ -9,6 +9,7 @@ import com.appsflyer.AppsFlyerLib
 import com.appsflyer.MediationNetwork
 import com.google.android.gms.ads.AdValue
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.ResponseInfo
 import com.meta.brain.R
 import com.meta.brain.module.base.MetaBrainApp
@@ -232,9 +233,7 @@ class AdsController() {
             onEvent: AdEvent? = null
         ) {
             CoroutineScope(Dispatchers.Main).launch {
-                container.removeAllViews()
-                container.addView(adapter.root)
-                adsNative.loadNative(activity, adUnit, adapter, onEvent)
+                adsNative.loadNative(activity, adUnit, adapter, onEvent, container)
             }
         }
 
