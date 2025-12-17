@@ -77,8 +77,10 @@ class AdsNative {
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     FirebaseManager.sendLog("native_load_fail", null)
-                    views.root.gone()
-                    container.gone()
+                    if (currentNativeAd == null) {
+                        views.root.gone()
+                        container.gone()
+                    }
                     onEvent?.onLoadFail()
 
                     debugLog(TAG,"Native Ad load failed: ${loadAdError.message}") {
