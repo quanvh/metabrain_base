@@ -12,7 +12,9 @@ import android.widget.ImageView
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.meta.brain.R
+import com.meta.brain.module.ads.AdsBanner
 import com.meta.brain.module.ads.AdsController
+import com.meta.brain.module.ads.AdsNative
 import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.ads.NativeAdViews
 import com.meta.brain.module.base.BaseActivity
@@ -77,21 +79,22 @@ class LanguageActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Read configs first to get custom layout
         readConfigsEarly()
-        
+
         // Set content view with layout from config or default
-        val layoutToUse = if (languageUiConfig?.layoutId != null && languageUiConfig!!.layoutId != 0) {
-            languageUiConfig!!.layoutId
-        } else {
-            R.layout.language_activity
-        }
+        val layoutToUse =
+            if (languageUiConfig?.layoutId != null && languageUiConfig!!.layoutId != 0) {
+                languageUiConfig!!.layoutId
+            } else {
+                R.layout.language_activity
+            }
         setContentView(layoutToUse)
-        
+
         // Initialize views using findViewById
         initViews()
-        
+
         // Initialize UI
         initView()
     }
@@ -206,11 +209,12 @@ class LanguageActivity :
 
     private fun buildLanguageList(): MutableList<LanguageModel> {
         // Use language list from UI config if provided, otherwise use default
-        val list = if (languageUiConfig?.listLanguage != null && languageUiConfig!!.listLanguage.isNotEmpty()) {
-            languageUiConfig!!.listLanguage.toMutableList()
-        } else {
-            buildDefaultLanguageList()
-        }
+        val list =
+            if (languageUiConfig?.listLanguage != null && languageUiConfig!!.listLanguage.isNotEmpty()) {
+                languageUiConfig!!.listLanguage.toMutableList()
+            } else {
+                buildDefaultLanguageList()
+            }
 
         if (list.isNotEmpty()) {
             val selectedIndex = list.indexOfFirst { it.isSelected }
@@ -283,8 +287,15 @@ class LanguageActivity :
         }
 
         val adapter: NativeAdViews = GenericNativeAdViews(nativeAdView)
+        val adNative = AdsNative()
 
-        AdsController.loadNative(this, adUnit, container, adapter)
+        adNative.loadNative(
+            context = this,
+            adUnit = adUnit,
+            views = adapter,
+            onEvent = null,
+            container = container
+        )
     }
 
     private fun loadBannerAd(container: ViewGroup, bannerConfig: BannerConfig) {
@@ -293,7 +304,8 @@ class LanguageActivity :
             container.visibility = View.GONE
             return
         }
-        AdsController.loadBanner(
+        val adBanner = AdsBanner()
+        adBanner.loadBanner(
             this,
             adUnit,
             container,

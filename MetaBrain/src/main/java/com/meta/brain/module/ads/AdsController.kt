@@ -233,6 +233,13 @@ class AdsController() {
             onEvent: AdEvent? = null
         ) {
             CoroutineScope(Dispatchers.Main).launch {
+                // Đảm bảo không bị crash nếu initAdmob chưa được gọi trước đó
+                if (!::adsNative.isInitialized) {
+                    if (MetaBrainApp.debug) {
+                        Log.w(TAG, "adsNative used before initAdmob(), initializing lazily")
+                    }
+                    adsNative = AdsNative()
+                }
                 adsNative.loadNative(activity, adUnit, adapter, onEvent, container)
             }
         }
@@ -245,6 +252,13 @@ class AdsController() {
             container: ViewGroup,
             bannerSizeType: BannerSizeType? = null
         ) {
+            // Tương tự native, tránh crash nếu chưa init
+            if (!::adsBanner.isInitialized) {
+                if (MetaBrainApp.debug) {
+                    Log.w(TAG, "adsBanner used before initAdmob(), initializing lazily")
+                }
+                adsBanner = AdsBanner()
+            }
             adsBanner.loadBanner(context, adUnit, container, bannerSizeType)
         }
 
