@@ -28,6 +28,7 @@ sdpAndroid = "1.1.1"
 sspAndroid = "1.1.1"
 userMessagingPlatform = "3.2.0"
 firebaseBom="33.2.0"
+shimmer = "0.5.0"
 
 [libraries]
 af-android-sdk = { module = "com.appsflyer:af-android-sdk", version.ref = "afAndroidSdk" }
@@ -71,7 +72,7 @@ review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "rev
 sdp-android = { module = "com.intuit.sdp:sdp-android", version.ref = "sdpAndroid" }
 ssp-android = { module = "com.intuit.ssp:ssp-android", version.ref = "sspAndroid" }
 user-messaging-platform = { module = "com.google.android.ump:user-messaging-platform", version.ref = "userMessagingPlatform" }
-
+shimmer = { module = "com.facebook.shimmer:shimmer", version.ref = "shimmer" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
