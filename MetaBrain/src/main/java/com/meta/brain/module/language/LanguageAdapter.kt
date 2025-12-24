@@ -26,7 +26,7 @@ class LanguageAdapter(
     @LayoutRes private val customItemLayoutId: Int = 0
 ): RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
 
-    var itemPosition: Int = 0
+    var itemPosition: Int = -1
     
     inner class LanguageAdapterVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val bgLayout: ConstraintLayout = itemView.findViewById(R.id.bg_layout)

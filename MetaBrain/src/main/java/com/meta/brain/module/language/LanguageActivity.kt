@@ -192,7 +192,6 @@ class LanguageActivity :
             return
         }
 
-        languageModel = languageList.firstOrNull { it.isSelected } ?: languageList.first()
 
         // Use custom item layout if provided in UI config
         val itemLayoutId = languageUiConfig?.itemLayoutId
@@ -201,8 +200,6 @@ class LanguageActivity :
         } else {
             LanguageAdapter(this, languageList, this)
         }
-        val selectedIndex = languageList.indexOfFirst { it.isSelected }.takeIf { it >= 0 } ?: 0
-        languageAdapter.itemPosition = selectedIndex
 
         recyclerView.adapter = languageAdapter
     }
@@ -215,21 +212,6 @@ class LanguageActivity :
             } else {
                 buildDefaultLanguageList()
             }
-
-        if (list.isNotEmpty()) {
-            val selectedIndex = list.indexOfFirst { it.isSelected }
-            if (selectedIndex < 0) {
-                val preferredCode = getPreferredLanguageCode()
-                val preferredIndex = list.indexOfFirst { it.languageCode == preferredCode }
-                if (preferredIndex >= 0) {
-                    list.forEach { it.isSelected = false }
-                    list[preferredIndex].isSelected = true
-                } else {
-                    list.first().isSelected = true
-                }
-            }
-        }
-
         return list
     }
 

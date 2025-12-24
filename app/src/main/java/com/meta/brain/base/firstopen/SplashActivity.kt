@@ -171,7 +171,20 @@ class SplashActivity : FOSplashActivity() {
 
     override fun initTemplateUiConfig(): FOTemplateUiConfig? {
         // Override this method to provide custom UI configuration
-        val listLanguage = buildLanguageList()
+        val listLanguage = listOf(
+            LanguageModel(
+                id = 1,
+                name = "English",
+                languageCode = "en",
+                isSelected = false
+            ),
+            LanguageModel(
+                id = 2,
+                name = "Spanish",
+                languageCode = "es",
+                isSelected = false
+            )
+        )
         val layoutId = R.layout.language_activity_custom
         val itemLayoutId = R.layout.language_item
         val languageUiConfig = LanguageUiConfig(
