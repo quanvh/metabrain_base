@@ -10,7 +10,6 @@ import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
-import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -40,8 +39,6 @@ abstract class FOSplashActivity : AppCompatActivity() {
 
     private lateinit var ump: UMP
 
-    abstract fun nextScreen(activity: ComponentActivity, data: Intent)
-
     abstract fun updateUI(savedInstanceState: Bundle?)
 
     @LayoutRes
@@ -61,6 +58,16 @@ abstract class FOSplashActivity : AppCompatActivity() {
     }
 
     /**
+     * Get template ad configuration for LanguageActivity
+     * Override in subclasses to provide ad configuration
+     * @return FOTemplateAdConfig or null if no ad config needed
+     */
+    open fun getTemplateAdConfig(): FOTemplateAdConfig? {
+        // Override in subclasses to provide ad config
+        return null
+    }
+
+    /**
      * Initialize template UI configuration for LanguageActivity
      * Override in subclasses to provide custom UI configurations
      * @return FOTemplateUiConfig or null if using default UI
@@ -68,6 +75,23 @@ abstract class FOSplashActivity : AppCompatActivity() {
     open fun initTemplateUiConfig(): FOTemplateUiConfig? {
         // Override in subclasses to provide custom UI config
         return null
+    }
+
+    /**
+     * Called when navigating to MainActivity (not first open or language screen not needed)
+     * Override in subclasses to add custom logic like update check
+     */
+    open fun onNavigateToMain() {
+        // Default: navigate directly to MainActivity
+        val activityClass = DataManager.mainActivity
+        if (activityClass != null) {
+            val intent = Intent(this, activityClass)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        } else {
+            throw IllegalStateException("MainActivity init first!")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,7 +125,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 interceptorShowFullScreenAd()
 
                 // Navigate to next screen
-                nextScreen(this@FOSplashActivity, intent)
+                startMain()
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -173,6 +197,12 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 val intent = Intent(this, LanguageActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
+                // Pass ad config if available
+                val adConfig = getTemplateAdConfig()
+                if (adConfig != null) {
+                    intent.putExtra(FOTemplateAdConfig.ARG_BUNDLE, adConfig)
+                }
+
                 // Pass UI config if available
                 val uiConfig = initTemplateUiConfig()
                 if (uiConfig != null) {
@@ -180,15 +210,9 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 }
 
                 startActivity(intent)
+                finish()
             } else {
-                val activityClass = DataManager.mainActivity
-                if (activityClass != null) {
-                    val intent = Intent(this, activityClass)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                } else {
-                    throw IllegalStateException("MainActivity init first!")
-                }
+                onNavigateToMain()
             }
         }
     }
