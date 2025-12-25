@@ -171,19 +171,17 @@ class SplashActivity : FOSplashActivity() {
 
     override fun initTemplateUiConfig(): FOTemplateUiConfig? {
         // Override this method to provide custom UI configuration
-        val listLanguage = listOf(
-            LanguageModel(
-                id = 1,
-                name = "English",
-                languageCode = "en",
-                isSelected = false
-            ),
-            LanguageModel(
-                id = 2,
-                name = "Spanish",
-                languageCode = "es",
-                isSelected = false
-            )
+        val listLanguage =  listOf(
+            LanguageModel(0, "English (US)","en", false),
+            LanguageModel(1, "Vietnamese", "vi", false),
+            LanguageModel(2, "French", "fr", false),
+            LanguageModel(3, "Spanish", "es", false),
+            LanguageModel(4, "India", "hi", false),
+            LanguageModel(5, "Portuguese (Brazil)", "pt-BR", false),
+            LanguageModel(6, "Indonesia", "in", false),
+            LanguageModel(7, "Russian", "ru", false),
+            LanguageModel(8, "Turkey", "tr-TR", false),
+            LanguageModel(9, "Malaysian", "ms", false),
         )
         val layoutId = R.layout.language_activity_custom
         val itemLayoutId = R.layout.language_item
@@ -202,8 +200,8 @@ class SplashActivity : FOSplashActivity() {
     protected open fun buildLanguageList(): List<LanguageModel> {
         // Default implementation using LanguageActivity's default languages
         val languageList = mutableListOf<LanguageModel>()
-        val userPreferred = DataManager.user.language.ifEmpty { 
-            java.util.Locale.getDefault().language 
+        val userPreferred = DataManager.user.language.ifEmpty {
+            java.util.Locale.getDefault().language
         }
 
         for (i in LanguageActivity.languageCode.indices) {

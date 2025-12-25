@@ -15,26 +15,25 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import androidx.core.net.toUri
 import com.meta.brain.R
 import de.hdodenhof.circleimageview.CircleImageView
 
 class LanguageAdapter(
-    private val context: Context, 
+    private val context: Context,
     private val listLanguage: MutableList<LanguageModel>,
     private val callback: LanguageAdapterCallBack?,
     @LayoutRes private val customItemLayoutId: Int = 0
-): RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
+) : RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
 
     var itemPosition: Int = -1
-    
+
     inner class LanguageAdapterVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val bgLayout: ConstraintLayout = itemView.findViewById(R.id.bg_layout)
         private val imgCircleChoose: ImageView = itemView.findViewById(R.id.imgCircleChoose)
         private val imgRoundChoose: ImageView = itemView.findViewById(R.id.imgRoundChoose)
         private val tvtNameCountry: TextView = itemView.findViewById(R.id.tvtNameCountry)
         private val countryImage: CircleImageView = itemView.findViewById(R.id.countryImage)
-        
+
         fun onBind(languageModel: LanguageModel, position: Int) {
             itemView.setOnClickListener {
                 languageModel.isSelected = !languageModel.isSelected
@@ -45,7 +44,7 @@ class LanguageAdapter(
                     callback?.onSelectLanguage(languageModel)
                 }
             }
-            
+
             if (itemPosition == position) {
                 imgCircleChoose.visibility = View.VISIBLE
                 imgRoundChoose.visibility = View.GONE
@@ -55,32 +54,35 @@ class LanguageAdapter(
                 imgRoundChoose.visibility = View.VISIBLE
                 bgLayout.setBackgroundResource(R.drawable.bg_language_item_unselected)
             }
-            
-            tvtNameCountry.text = languageModel.name
-            
-            Glide.with(context)
-                .load("file:///android_asset/flags/${languageModel.languageCode}.png".toUri())
-                .listener(object : RequestListener<Drawable?> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable?>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
 
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                })
-                .into(countryImage)
+            tvtNameCountry.text = languageModel.name
+
+            val flagDrawableRes = getFlagDrawableRes(languageModel.languageCode)
+            if (flagDrawableRes != null) {
+                Glide.with(context)
+                    .load(flagDrawableRes)
+                    .listener(object : RequestListener<Drawable?> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable?>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable?>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+                    })
+                    .into(countryImage)
+            }
         }
     }
 
@@ -101,7 +103,44 @@ class LanguageAdapter(
 
     override fun getItemCount(): Int = listLanguage.size
 
-    interface LanguageAdapterCallBack{
+    /**
+     * Maps language code to drawable resource ID for flag images
+     * @param languageCode The language code (e.g., "en", "pt", "es", "tr-TR", "pt-BR")
+     * @return Drawable resource ID or null if not found
+     */
+    private fun getFlagDrawableRes(languageCode: String): Int? {
+        // Extract base language code (part before hyphen) for codes like "tr-TR", "pt-BR"
+        val baseCode = languageCode.lowercase().substringBefore("-")
+        val fullCode = languageCode.lowercase()
+        
+        return when {
+            // Handle full codes with region first (e.g., "pt-br", "tr-tr")
+            fullCode == "pt-br" -> R.drawable.ic_language_brazil
+            fullCode == "tr-tr" -> R.drawable.ic_language_tr
+            // Handle base language codes
+            baseCode == "en" -> R.drawable.ic_language_en
+            baseCode == "in" -> R.drawable.ic_language_indo
+            baseCode == "pt" -> R.drawable.ic_language_pt
+            baseCode == "es" -> R.drawable.ic_language_es
+            baseCode == "hi" -> R.drawable.ic_language_hi
+            baseCode == "tr" -> R.drawable.ic_language_tr
+            baseCode == "fr" -> R.drawable.ic_language_fr
+            baseCode == "vi" -> R.drawable.ic_language_vi
+            baseCode == "ru" -> R.drawable.ic_language_ru
+            baseCode == "de" -> R.drawable.ic_language_de
+            baseCode == "cn" || baseCode == "zh" -> R.drawable.ic_language_cn
+            baseCode == "ja" -> R.drawable.ic_language_ja
+            baseCode == "ko" -> R.drawable.ic_language_ko
+            baseCode == "ma" || baseCode == "ms" -> R.drawable.ic_language_ma
+            baseCode == "nl" -> R.drawable.ic_language_nl
+            baseCode == "phi" || baseCode == "fil" || baseCode == "tl" -> R.drawable.ic_language_phi
+            baseCode == "ita" || baseCode == "it" -> R.drawable.ic_language_ita
+            baseCode == "br" -> R.drawable.ic_language_brazil
+            else -> null
+        }
+    }
+
+    interface LanguageAdapterCallBack {
         fun onSelectLanguage(languageModel: LanguageModel)
     }
 }
