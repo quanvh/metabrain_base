@@ -53,6 +53,11 @@ abstract class FOSplashActivity : AppCompatActivity() {
         // Override in subclasses
     }
 
+    /**
+     * Interceptor hook for showing full screen ads before navigation
+     * Called after splash screen delay and before navigating to main screen
+     * Override in subclasses to show full screen ads or perform other async operations
+     */
     open suspend fun interceptorShowFullScreenAd() {
         // Override in subclasses
     }
