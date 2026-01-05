@@ -25,7 +25,21 @@ class LanguageAdapter(
     @LayoutRes private val customItemLayoutId: Int = 0
 ) : RecyclerView.Adapter<LanguageAdapter.LanguageAdapterVH>() {
 
-    var itemPosition: Int = -1
+    private var selectedPosition: Int = -1
+
+    init {
+        // Ensure only the first selected item is honored
+        val firstSelectedIndex = listLanguage.indexOfFirst { it.isSelected }
+        if (firstSelectedIndex != -1) {
+            selectedPosition = firstSelectedIndex
+            // Make sure no other items are marked as selected
+            for (i in listLanguage.indices) {
+                if (i != selectedPosition) {
+                    listLanguage[i].isSelected = false
+                }
+            }
+        }
+    }
 
     inner class LanguageAdapterVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val bgLayout: ConstraintLayout = itemView.findViewById(R.id.bg_layout)
@@ -36,16 +50,22 @@ class LanguageAdapter(
 
         fun onBind(languageModel: LanguageModel, position: Int) {
             itemView.setOnClickListener {
-                languageModel.isSelected = !languageModel.isSelected
-                if (itemPosition != position) {
-                    notifyItemChanged(itemPosition)
-                    itemPosition = position
-                    notifyItemChanged(position)
-                    callback?.onSelectLanguage(languageModel)
+                if (selectedPosition != position) {
+                    val previouslySelectedPosition = selectedPosition
+                    if (previouslySelectedPosition != -1) {
+                        listLanguage[previouslySelectedPosition].isSelected = false
+                        notifyItemChanged(previouslySelectedPosition)
+                    }
+
+                    selectedPosition = position
+                    listLanguage[selectedPosition].isSelected = true
+                    notifyItemChanged(selectedPosition)
+                    callback?.onSelectLanguage(listLanguage[selectedPosition])
                 }
             }
 
-            if (itemPosition == position) {
+            // Use selectedPosition as the single source of truth for UI state
+            if (position == selectedPosition) {
                 imgCircleChoose.visibility = View.VISIBLE
                 imgRoundChoose.visibility = View.GONE
                 bgLayout.setBackgroundResource(R.drawable.bg_language_item_selected)

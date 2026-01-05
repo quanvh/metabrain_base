@@ -16,17 +16,18 @@ import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.utils.Utility
 
-class AdsInter (val preload: Boolean = false) {
+class AdsInter(val preload: Boolean = false) {
 
     companion object {
         private const val TAG = "[AdsInter]"
     }
+
     private var adIsLoading: Boolean = false
     private var inter: InterstitialAd? = null
 
     private var currentUnit: String = ""
 
-    private var loadAction :AdEvent? = null
+    private var loadAction: AdEvent? = null
 
     private var timeLastInter: Long = 0
     private var firstStart: Boolean = true
@@ -35,14 +36,14 @@ class AdsInter (val preload: Boolean = false) {
         timeLastInter = System.currentTimeMillis()
     }
 
-    fun loadInter(context: Context, adUnit:String, onEvent: AdEvent?) {
+    fun loadInter(context: Context, adUnit: String, onEvent: AdEvent?) {
         loadAction = onEvent
         currentUnit = adUnit
 
         val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
                 && !(FirebaseManager.rc.checkBot && Utility.isBot(context))
 
-        if(!isLoadAds || inter != null){
+        if (!isLoadAds || inter != null) {
             onEvent?.onLoaded()
             return
         }
@@ -53,18 +54,23 @@ class AdsInter (val preload: Boolean = false) {
         if (MetaBrainApp.debug) {
             Log.d(TAG, "Inter Ad call, id: $adUnit")
         }
-        FirebaseManager.sendLog("inter_call",null)
+        FirebaseManager.sendLog("inter_call", null)
         InterstitialAd.load(
             context,
             adUnit,
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
-                    ad.onPaidEventListener = OnPaidEventListener { adValue -> AdsController.logAdRevenue(adValue,ad.responseInfo)}
+                    ad.onPaidEventListener = OnPaidEventListener { adValue ->
+                        AdsController.logAdRevenue(
+                            adValue,
+                            ad.responseInfo
+                        )
+                    }
                     inter = ad
                     adIsLoading = false
                     onEvent?.onLoaded()
-                    FirebaseManager.sendLog("inter_loaded",null)
+                    FirebaseManager.sendLog("inter_loaded", null)
                     if (MetaBrainApp.debug) {
                         Log.d(TAG, "Inter Ad was loaded.")
                         Toast.makeText(context, "onAdLoaded()", Toast.LENGTH_SHORT).show()
@@ -76,7 +82,7 @@ class AdsInter (val preload: Boolean = false) {
                     inter = null
                     adIsLoading = false
                     onEvent?.onLoadFail()
-                    FirebaseManager.sendLog("inter_load_fail",null)
+                    FirebaseManager.sendLog("inter_load_fail", null)
                     if (MetaBrainApp.debug) {
                         Log.d(TAG, "Inter Ad load failed: " + adError.message)
                         val error =
@@ -95,12 +101,12 @@ class AdsInter (val preload: Boolean = false) {
     fun showInter(activity: Activity, onEvent: AdEvent?) {
         val isLoadAds = FirebaseManager.rc.useAds && !DataManager.user.removeAds
                 && !(FirebaseManager.rc.checkBot && Utility.isBot(activity))
-        if(!isLoadAds) {
+        if (!isLoadAds) {
             onEvent?.onComplete()
             return
         }
 
-        if(!isDuration()){
+        if (!isDuration()) {
             if (MetaBrainApp.debug) {
                 Log.d(AdsController.Companion.TAG, "Time less than duration config")
             }
@@ -112,7 +118,7 @@ class AdsInter (val preload: Boolean = false) {
             if (MetaBrainApp.debug) {
                 Log.d(TAG, "Inter Ad show")
             }
-            FirebaseManager.sendLog("inter_show",null)
+            FirebaseManager.sendLog("inter_show", null)
             inter?.fullScreenContentCallback =
                 object : FullScreenContentCallback() {
                     override fun onAdDismissedFullScreenContent() {
@@ -122,8 +128,8 @@ class AdsInter (val preload: Boolean = false) {
                         timeLastInter = System.currentTimeMillis()
                         inter = null
                         onEvent?.onComplete()
-                        FirebaseManager.sendLog("inter_success",null)
-                        if(preload) loadInter(activity,currentUnit,loadAction)
+                        FirebaseManager.sendLog("inter_success", null)
+                        if (preload) loadInter(activity, currentUnit, loadAction)
                     }
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
@@ -131,8 +137,8 @@ class AdsInter (val preload: Boolean = false) {
                             Log.d(TAG, "Inter Ad failed to show: " + adError.message)
                         }
                         inter = null
-                        FirebaseManager.sendLog("inter_show_fail",null)
-                        if(preload) loadInter(activity,currentUnit,loadAction)
+                        FirebaseManager.sendLog("inter_show_fail", null)
+                        if (preload) loadInter(activity, currentUnit, loadAction)
                     }
 
                     override fun onAdShowedFullScreenContent() {
@@ -154,25 +160,22 @@ class AdsInter (val preload: Boolean = false) {
                     }
                 }
             inter?.show(activity)
-            } else{
+        } else {
             onEvent?.onComplete()
-            if(preload) loadInter(activity,currentUnit,loadAction)
+            if (preload) loadInter(activity, currentUnit, loadAction)
             if (MetaBrainApp.debug) {
                 Log.d(TAG, "Inter Ad not available")
             }
-            FirebaseManager.sendLog("inter_not_avail",null)
+            FirebaseManager.sendLog("inter_not_avail", null)
         }
 
     }
 
-    fun isDuration() : Boolean{
-        if (firstStart)
-        {
+    fun isDuration(): Boolean {
+        if (firstStart) {
             firstStart = false;
             return (System.currentTimeMillis() - timeLastInter) > 1000 * FirebaseManager.rc.timeFirstInter;
-        }
-        else
-        {
+        } else {
             return (System.currentTimeMillis() - timeLastInter) > 1000 * FirebaseManager.rc.durationInter;
         }
     }

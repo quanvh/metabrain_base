@@ -128,10 +128,10 @@ class SplashActivity : FOSplashActivity() {
         return R.layout.native_default_no_id_price
     }
 
-    override fun initTemplateUiConfig(): FOTemplateUiConfig? {
+    override fun initTemplateUiConfig(): FOTemplateUiConfig {
         // Override this method to provide custom UI configuration
         val listLanguage =  listOf(
-            LanguageModel(0, "English (US)","en", false),
+            LanguageModel(0, "English (US)","en", true),
             LanguageModel(1, "Vietnamese", "vi", false),
             LanguageModel(2, "French", "fr", false),
             LanguageModel(3, "Spanish", "es", false),
@@ -167,4 +167,3 @@ class SplashActivity : FOSplashActivity() {
         }
     }
 }
-
