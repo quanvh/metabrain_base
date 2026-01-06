@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.compareTo
 
 class AdsController() {
 
@@ -32,11 +33,17 @@ class AdsController() {
         private lateinit var adsReward: AdsReward
         private lateinit var adsNative: AdsNative
         private lateinit var adsBanner: AdsBanner
+        var timeLastInter: Long = 0
+        private var firstStart: Boolean = true
 
         const val TAG = "[AdsController]"
 
 
         var adOpenCount: Int = 0
+
+        init {
+            timeLastInter = System.currentTimeMillis()
+        }
 
         fun isOpenReady(): Boolean {
             return adOpenCount >= 1
@@ -324,7 +331,17 @@ class AdsController() {
             )
             AppsFlyerLib.getInstance().logAdRevenue(data, extras)
         }
+
+        fun isDuration(): Boolean {
+            if (firstStart) {
+                firstStart = false;
+                return (System.currentTimeMillis() - timeLastInter) > 1000 * FirebaseManager.rc.timeFirstInter;
+            } else {
+                return (System.currentTimeMillis() - timeLastInter) > 1000 * FirebaseManager.rc.durationInter;
+            }
+        }
     }
+
 }
 
 public abstract class AdEvent {
