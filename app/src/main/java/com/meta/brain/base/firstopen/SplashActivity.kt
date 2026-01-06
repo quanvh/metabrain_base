@@ -71,35 +71,6 @@ class SplashActivity : FOSplashActivity() {
         checkAds()
     }
 
-    override suspend fun interceptorShowFullScreenAd() {
-        // Wait for ads to be ready (already started in afterFetchRemote)
-        while (loadingJob != null) {
-            delay(100)
-        }
-
-        // Show ads if configured
-        if (FirebaseManager.rc.useAds) {
-            if (FirebaseManager.rc.useInterOpen) {
-                val adCompleted = CompletableDeferred<Unit>()
-                AdsController.showInterOpen(this, object : AdEvent() {
-                    override fun onComplete() {
-                        adCompleted.complete(Unit)
-                    }
-                })
-                adCompleted.await()
-            } else if (FirebaseManager.rc.useOpenSplash) {
-                val adCompleted = CompletableDeferred<Unit>()
-                AdsController.showOpenAd(this, object : AdEvent() {
-                    override fun onComplete() {
-                        adCompleted.complete(Unit)
-                    }
-                })
-                adCompleted.await()
-            }
-            // If no ads are shown, startMain() will be called automatically by parent class
-        }
-    }
-
     override fun getTemplateAdConfig(): FOTemplateAdConfig {
         // Create native ad config for language screen
         return FOTemplateAdConfig(

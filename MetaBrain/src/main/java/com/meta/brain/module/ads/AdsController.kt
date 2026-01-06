@@ -81,18 +81,8 @@ class AdsController() {
                     adsNative = AdsNative()
                     adsBanner = AdsBanner()
 
-                    fun preloadAds() {
-                        if (preloadInter) {
-                            loadInter(context, null)
-                        }
-                        if (preloadReward) {
-                            loadReward(context, null)
-                        }
-                    }
-
                     fun initApp() {
                         adOpenCount++
-                        preloadAds()
                     }
                     if (isLoadAds) {
                         val adOpenEvent = object : AdEvent() {

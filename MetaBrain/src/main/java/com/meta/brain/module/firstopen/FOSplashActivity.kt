@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.meta.brain.R
+import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.UMP
 import com.meta.brain.module.data.DataManager
@@ -22,8 +23,12 @@ import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.language.LanguageActivity
 import com.meta.brain.module.language.LanguageModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Locale
 
 /**
@@ -58,8 +63,15 @@ abstract class FOSplashActivity : AppCompatActivity() {
      * Called after splash screen delay and before navigating to main screen
      * Override in subclasses to show full screen ads or perform other async operations
      */
-    open suspend fun interceptorShowFullScreenAd() {
-        // Override in subclasses
+
+    suspend fun interceptorShowFullScreenAd() {
+        val adReady = awaitOpenAdOrTimeout(30_000)
+
+        if (FirebaseManager.rc.useAds && adReady) {
+            showOpenAdsAndWait()
+        } else {
+            startMain()
+        }
     }
 
     /**
@@ -130,7 +142,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 interceptorShowFullScreenAd()
 
                 // Navigate to next screen
-                startMain()
+//                startMain()
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -197,6 +209,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
     }
 
     private fun startMain() {
+        Log.d(TAG, "startMain: ")
         if (!isDestroyed) {
             if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
                 val intent = Intent(this, LanguageActivity::class.java)
@@ -220,6 +233,84 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 onNavigateToMain()
             }
         }
+    }
+
+
+    private suspend fun awaitOpenAdOrTimeout(
+        timeoutMs: Long
+    ): Boolean = withTimeoutOrNull(timeoutMs) {
+        suspendCancellableCoroutine { cont ->
+
+            Log.d(TAG, "awaitOpenAdOrTimeout start")
+
+            lifecycleScope.launch {
+                delay(30000)
+            }
+
+            Log.d(TAG, "awaitOpenAdOrTimeout start2")
+            // Nếu đã ready thì resume luôn
+            if (AdsController.isOpenReady()) {
+                cont.resume(true) {}
+                return@suspendCancellableCoroutine
+            }
+
+            // Poll nhẹ (fallback an toàn)
+            val job = lifecycleScope.launch {
+                while (isActive) {
+                    if (AdsController.isOpenReady()) {
+                        if (cont.isActive) {
+                            cont.resume(true) {}
+                        }
+                        break
+                    }
+                    delay(300)
+                }
+            }
+
+            // Cleanup khi cancel
+            cont.invokeOnCancellation {
+                Log.d(TAG, "awaitOpenAdOrTimeout cancelled")
+                job.cancel()
+            }
+        }
+    } ?: false
+
+    private suspend fun showOpenAdsAndWait() {
+        suspendCancellableCoroutine { cont ->
+            when {
+                FirebaseManager.rc.useInterOpen -> {
+                    AdsController.showInterOpen(
+                        this@FOSplashActivity,
+                        object : AdEvent() {
+                            override fun onComplete() {
+                                if (cont.isActive) cont.resume(Unit) {}
+                            }
+                        }
+                    )
+                }
+
+                FirebaseManager.rc.useOpenSplash -> {
+                    AdsController.showOpenAd(
+                        this@FOSplashActivity,
+                        object : AdEvent() {
+                            override fun onComplete() {
+                                if (cont.isActive) cont.resume(Unit) {}
+                            }
+                        }
+                    )
+                }
+
+                else -> {
+                    cont.resume(Unit) {}
+                }
+            }
+
+            cont.invokeOnCancellation {
+                Log.d(TAG, "showOpenAdsAndWait cancelled")
+            }
+        }
+
+        startMain()
     }
 }
 
