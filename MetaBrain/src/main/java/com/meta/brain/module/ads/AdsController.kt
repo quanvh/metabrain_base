@@ -25,6 +25,8 @@ import kotlin.compareTo
 class AdsController() {
 
     companion object {
+        private const val PRELOAD_BUFFER_SECONDS = 10
+
         private lateinit var appOpen: AppOpen
         private lateinit var appOpenResume: AppOpen
         private lateinit var adInter: AdsInter
@@ -330,6 +332,19 @@ class AdsController() {
                 return (System.currentTimeMillis() - timeLastInter) > 1000 * FirebaseManager.rc.durationInter;
             }
         }
+
+        fun canLoadInterAfterShow(): Boolean {
+            if (firstStart) return true
+            Log.d(
+                TAG, "canLoadInterAfterShow: ${
+                    System.currentTimeMillis() - timeLastInter >
+                            FirebaseManager.rc.durationInter * 1000L
+                }"
+            )
+            return System.currentTimeMillis() - timeLastInter >
+                    (FirebaseManager.rc.durationInter - PRELOAD_BUFFER_SECONDS) * 1000L
+        }
+
     }
 
 }

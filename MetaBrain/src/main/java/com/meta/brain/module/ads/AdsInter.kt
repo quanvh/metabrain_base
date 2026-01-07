@@ -33,7 +33,7 @@ class AdsInter(val preload: Boolean = false) {
         currentUnit = adUnit
         loadAction = event
 
-        if (!canUseAds(context) || inter != null || !AdsController.isDuration()) {
+        if (!canUseAds(context) || inter != null || !AdsController.canLoadInterAfterShow()) {
             event?.onLoaded()
             return
         }
