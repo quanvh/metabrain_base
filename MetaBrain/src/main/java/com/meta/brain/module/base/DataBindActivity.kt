@@ -4,22 +4,19 @@ import android.os.Bundle
 import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.viewbinding.ViewBinding
 
-abstract class DataBindActivity<DB : ViewDataBinding>(@LayoutRes val layout: Int): BaseActivity(){
+abstract class DataBindActivity<VB : ViewBinding>(@LayoutRes val layout: Int): BaseActivity(){
 
     open val binding by lazy {
-        DataBindingUtil.setContentView(this, layout) as DB
+        DataBindingUtil.setContentView(this, layout) as VB
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setupBindingLifecycleOwner()
         initView()
     }
 
     abstract fun initView()
 
-    private fun setupBindingLifecycleOwner() {
-        binding.lifecycleOwner = this
-    }
 }

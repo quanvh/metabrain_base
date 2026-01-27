@@ -65,7 +65,7 @@ afterEvaluate {
 
                 groupId = "com.github.quanvh"
                 artifactId = "metabrain"
-                version = "1.0.27"
+                version = "1.0.28"
             }
         }
         repositories {
