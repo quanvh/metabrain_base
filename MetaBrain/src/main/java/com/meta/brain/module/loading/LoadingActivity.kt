@@ -4,13 +4,17 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.meta.brain.R
+import com.meta.brain.databinding.LoadingActivityBinding
 //import com.meta.brain.file.recovery.IntroActivity
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.UMP
 import com.meta.brain.module.base.BaseActivity
+import com.meta.brain.module.base.BindingActivity
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firebase.RemoteEvent
@@ -19,14 +23,17 @@ import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.showUpdateDialog
 import kotlinx.coroutines.*
 
-class LoadingActivity : BaseActivity() {
+class LoadingActivity : BindingActivity<LoadingActivityBinding>() {
 
     private lateinit var ump: UMP
 
     private var loadingJob: Job? = null
-    companion object{
+
+    companion object {
         const val TAG = "[LoadingActivity]"
     }
+
+    override fun updateUI(savedInstanceState: Bundle?) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +41,7 @@ class LoadingActivity : BaseActivity() {
         sendEvent()
         DataManager.init(this)
 
-        FirebaseManager.initFirebase(this, object : RemoteEvent(){
+        FirebaseManager.initFirebase(this, object : RemoteEvent() {
             override fun onFetched() {
                 ump = UMP.getInstance(this@LoadingActivity)
                 ump.gatherConsent(this@LoadingActivity) { consentError ->
@@ -64,7 +71,7 @@ class LoadingActivity : BaseActivity() {
         super.onResume()
     }
 
-    private val totalTimeWait : Int = 30
+    private val totalTimeWait: Int = 30
     private var timeWait: Int = 0
     private fun checkAds() {
         loadingJob = lifecycleScope.launch {
@@ -74,14 +81,14 @@ class LoadingActivity : BaseActivity() {
                     loadingJob = null
 
 
-                    if(FirebaseManager.rc.useAds) {
-                        if(FirebaseManager.rc.useInterOpen){
-                            AdsController.showInterOpen(this@LoadingActivity,object : AdEvent(){
+                    if (FirebaseManager.rc.useAds) {
+                        if (FirebaseManager.rc.useInterOpen) {
+                            AdsController.showInterOpen(this@LoadingActivity, object : AdEvent() {
                                 override fun onComplete() {
                                     initApp()
                                 }
                             })
-                        } else if(FirebaseManager.rc.useOpenSplash) {
+                        } else if (FirebaseManager.rc.useOpenSplash) {
                             AdsController.showOpenAd(
                                 this@LoadingActivity,
                                 object : AdEvent() {
@@ -103,12 +110,12 @@ class LoadingActivity : BaseActivity() {
         }
     }
 
-    private fun initApp(){
+    private fun initApp() {
         checkUpdate()
     }
 
 
-    private fun checkUpdate(){
+    private fun checkUpdate() {
         var currentCode = 0L
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
         currentCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -116,7 +123,7 @@ class LoadingActivity : BaseActivity() {
         } else {
             packageInfo.versionCode.toLong()
         }
-        if(FirebaseManager.appVersion.isForce && FirebaseManager.appVersion.versionCode > currentCode){
+        if (FirebaseManager.appVersion.isForce && FirebaseManager.appVersion.versionCode > currentCode) {
             showUpdateDialog()
         } else {
             startMain()
@@ -133,7 +140,7 @@ class LoadingActivity : BaseActivity() {
         isStartMain = true
         if (!isDestroyed) {
             if (DataManager.user.firstOpen && FirebaseManager.rc.useLanguageOpen) {
-                val intent = Intent(this,LanguageActivity::class.java)
+                val intent = Intent(this, LanguageActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
                 startActivity(intent)
@@ -148,6 +155,10 @@ class LoadingActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    override fun inflateBinding(inflater: LayoutInflater): LoadingActivityBinding {
+        return LoadingActivityBinding.inflate(inflater)
     }
 }
 

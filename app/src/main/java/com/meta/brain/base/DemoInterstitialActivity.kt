@@ -2,13 +2,16 @@ package com.meta.brain.base
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.meta.brain.base.databinding.DemoInterstitialActivityBinding
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.AdsInter
 import com.meta.brain.module.base.BaseActivity
+import com.meta.brain.module.base.BindingActivity
 
 /**
  * Demo Activity để test AdsInter
@@ -27,7 +30,7 @@ import com.meta.brain.module.base.BaseActivity
  * - LoadingAdFragment.kt sử dụng AdsController.loadInter() và showInter()
  * - LoadingActivity.kt sử dụng AdsController.showInterOpen() khi mở app
  */
-class DemoInterstitialActivity : BaseActivity() {
+class DemoInterstitialActivity : BindingActivity<DemoInterstitialActivityBinding>() {
 
     companion object {
         private const val TAG = "[DemoInterstitialActivity]"
@@ -45,10 +48,13 @@ class DemoInterstitialActivity : BaseActivity() {
 
     // Cách 2: Sử dụng qua AdsController (như trong LoadingAdFragment)
     private var isAdLoadedViaController = false
+    override fun updateUI(savedInstanceState: Bundle?) {
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.meta.brain.base.R.layout.demo_interstitial_activity)
+        setContentView(R.layout.demo_interstitial_activity)
 
         initViews()
         setupClickListeners()
@@ -115,14 +121,16 @@ class DemoInterstitialActivity : BaseActivity() {
                 isAdLoadedViaController = true
                 updateStatus("✅ Ads đã load thành công qua AdsController!")
                 Log.d(TAG, "Ads loaded via AdsController")
-                Toast.makeText(this@DemoInterstitialActivity, "Ads loaded!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Ads loaded!", Toast.LENGTH_SHORT)
+                    .show()
             }
 
             override fun onLoadFail() {
                 isAdLoadedViaController = false
                 updateStatus("❌ Load ads thất bại qua AdsController")
                 Log.e(TAG, "Ads load failed via AdsController")
-                Toast.makeText(this@DemoInterstitialActivity, "Load failed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Load failed!", Toast.LENGTH_SHORT)
+                    .show()
             }
         })
     }
@@ -137,7 +145,8 @@ class DemoInterstitialActivity : BaseActivity() {
                 isAdLoadedViaController = false
                 updateStatus("✅ Ads đã show và đóng thành công!")
                 Log.d(TAG, "Ads shown and dismissed via AdsController")
-                Toast.makeText(this@DemoInterstitialActivity, "Ads completed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Ads completed!", Toast.LENGTH_SHORT)
+                    .show()
             }
 
             override fun onShowFail() {
@@ -161,14 +170,16 @@ class DemoInterstitialActivity : BaseActivity() {
             override fun onLoaded() {
                 updateStatus("✅ Ads đã load thành công trực tiếp!")
                 Log.d(TAG, "Ads loaded directly")
-                Toast.makeText(this@DemoInterstitialActivity, "Ads loaded!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Ads loaded!", Toast.LENGTH_SHORT)
+                    .show()
             }
 
             override fun onLoadFail() {
                 adsInterDirect = null
                 updateStatus("❌ Load ads thất bại trực tiếp")
                 Log.e(TAG, "Ads load failed directly")
-                Toast.makeText(this@DemoInterstitialActivity, "Load failed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Load failed!", Toast.LENGTH_SHORT)
+                    .show()
             }
         })
     }
@@ -182,7 +193,8 @@ class DemoInterstitialActivity : BaseActivity() {
             override fun onComplete() {
                 updateStatus("✅ Ads đã show và đóng thành công!")
                 Log.d(TAG, "Ads shown and dismissed directly")
-                Toast.makeText(this@DemoInterstitialActivity, "Ads completed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DemoInterstitialActivity, "Ads completed!", Toast.LENGTH_SHORT)
+                    .show()
                 // Nếu preload = true, ads sẽ tự động load lại
             }
 
@@ -201,24 +213,34 @@ class DemoInterstitialActivity : BaseActivity() {
         AdsController.Companion.loadInter(this, object : AdEvent() {
             override fun onLoaded() {
                 // Tự động show khi load thành công
-                AdsController.Companion.showInter(this@DemoInterstitialActivity, object : AdEvent() {
-                    override fun onComplete() {
-                        updateStatus("✅ Load và show tự động thành công!")
-                        Log.d(TAG, "Auto load and show completed")
-                        Toast.makeText(this@DemoInterstitialActivity, "Auto completed!", Toast.LENGTH_SHORT).show()
-                    }
+                AdsController.Companion.showInter(
+                    this@DemoInterstitialActivity,
+                    object : AdEvent() {
+                        override fun onComplete() {
+                            updateStatus("✅ Load và show tự động thành công!")
+                            Log.d(TAG, "Auto load and show completed")
+                            Toast.makeText(
+                                this@DemoInterstitialActivity,
+                                "Auto completed!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
 
-                    override fun onShowFail() {
-                        updateStatus("❌ Show ads thất bại trong auto mode")
-                        Log.e(TAG, "Auto show failed")
-                    }
-                })
+                        override fun onShowFail() {
+                            updateStatus("❌ Show ads thất bại trong auto mode")
+                            Log.e(TAG, "Auto show failed")
+                        }
+                    })
             }
 
             override fun onLoadFail() {
                 updateStatus("❌ Load ads thất bại trong auto mode")
                 Log.e(TAG, "Auto load failed")
-                Toast.makeText(this@DemoInterstitialActivity, "Auto load failed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@DemoInterstitialActivity,
+                    "Auto load failed!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
@@ -232,5 +254,9 @@ class DemoInterstitialActivity : BaseActivity() {
         super.onDestroy()
         // Cleanup nếu cần
         adsInterDirect = null
+    }
+
+    override fun inflateBinding(inflater: LayoutInflater): DemoInterstitialActivityBinding {
+        return DemoInterstitialActivityBinding.inflate(inflater)
     }
 }

@@ -12,12 +12,14 @@ import android.widget.ImageView
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.meta.brain.R
+import com.meta.brain.databinding.LanguageActivityBinding
 import com.meta.brain.module.ads.AdsBanner
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.AdsNative
 import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.ads.NativeAdViews
 import com.meta.brain.module.base.BaseActivity
+import com.meta.brain.module.base.BindingActivity
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.firstopen.BannerConfig
@@ -30,8 +32,7 @@ import com.meta.brain.module.utils.Utility
 import com.meta.brain.module.utils.invisible
 import java.util.Locale
 
-class LanguageActivity :
-    BaseActivity(),
+class LanguageActivity : BindingActivity<LanguageActivityBinding>(),
     LanguageAdapter.LanguageAdapterCallBack {
 
     companion object {
@@ -77,9 +78,7 @@ class LanguageActivity :
     private lateinit var recyclerView: RecyclerView
     private lateinit var adContainer: FrameLayout
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun updateUI(savedInstanceState: Bundle?) {
         // Read configs first to get custom layout
         readConfigsEarly()
 
@@ -324,5 +323,9 @@ class LanguageActivity :
         }
 
         return userPreferred
+    }
+
+    override fun inflateBinding(inflater: LayoutInflater): LanguageActivityBinding {
+        return LanguageActivityBinding.inflate(inflater)
     }
 }

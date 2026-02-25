@@ -3,6 +3,7 @@ package com.meta.brain.module.base
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -14,20 +15,27 @@ import com.meta.brain.module.firebase.FirebaseManager
 import com.meta.brain.module.utils.Utility
 
 abstract class BaseActivity : AppCompatActivity() {
+
+    protected abstract fun createContentView(savedInstanceState: Bundle?): View
+    protected abstract fun updateUI(savedInstanceState: Bundle?)
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewRoot = createContentView(savedInstanceState)
+        setContentView(viewRoot)
 //        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge()
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
 //        changeStatusBarColor(android.R.color.transparent)
         Utility.hideNavigationDevice(window)
+        updateUI(savedInstanceState)
 
         val params = Bundle().apply {
             putString("activity", javaClass.simpleName)
         }
-        if(FirebaseManager.available){
-            FirebaseManager.sendLog("start_screen",params)
+        if (FirebaseManager.available) {
+            FirebaseManager.sendLog("start_screen", params)
         }
     }
 

@@ -1,6 +1,8 @@
 package com.meta.brain.base
 
 import android.content.Intent
+import android.os.Bundle
+import android.view.View
 import com.meta.brain.base.databinding.IntroActivityBinding
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
@@ -20,4 +22,13 @@ class IntroActivity : DataBindActivity<IntroActivityBinding>(R.layout.intro_acti
     private fun startHome(){
         startActivity(Intent(this, ExampleAdsActivity::class.java))
     }
+
+    override fun createContentView(savedInstanceState: Bundle?): View {
+        return IntroActivityBinding.inflate(layoutInflater).root
+    }
+
+    override fun updateUI(savedInstanceState: Bundle?) {
+    }
+
+
 }

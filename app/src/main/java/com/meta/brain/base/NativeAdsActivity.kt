@@ -1,6 +1,8 @@
 package com.meta.brain.base
 
+import android.os.Bundle
 import android.util.Log
+import android.view.View
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.meta.brain.base.databinding.NativeActivityBinding
 import com.meta.brain.module.ads.AdEvent
@@ -39,6 +41,13 @@ class NativeAdsActivity :
                 }
             }
         )
+    }
+
+    override fun createContentView(savedInstanceState: Bundle?): View {
+       return NativeActivityBinding.inflate(layoutInflater).root
+    }
+
+    override fun updateUI(savedInstanceState: Bundle?) {
     }
 }
 

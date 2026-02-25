@@ -1,11 +1,14 @@
 package com.meta.brain.base
 
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import androidx.activity.result.contract.ActivityResultContracts
 import com.meta.brain.base.databinding.BannerActivityBinding
 import com.meta.brain.module.ads.AdsController
 import com.meta.brain.module.ads.BannerSizeType
+import com.meta.brain.module.base.BindingActivity
 import com.meta.brain.module.base.DataBindActivity
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firstopen.BannerConfig
@@ -14,7 +17,7 @@ import com.meta.brain.module.firstopen.LanguageAdConfig
 import com.meta.brain.module.firstopen.NativeConfig
 import com.meta.brain.module.language.LanguageActivity
 
-class ExampleAdsActivity : DataBindActivity<BannerActivityBinding>(R.layout.banner_activity) {
+class ExampleAdsActivity : BindingActivity<BannerActivityBinding>() {
 
     private val languageLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -27,23 +30,6 @@ class ExampleAdsActivity : DataBindActivity<BannerActivityBinding>(R.layout.bann
             }
         }
 
-    override fun initView() {
-        Log.d("BannerActivity", "language: ${DataManager.user.language}")
-        loadBannerAd()
-        binding.btnReloadBanner.setOnClickListener {
-            loadBannerAd()
-        }
-        binding.btnOpenNative.setOnClickListener {
-            startActivity(Intent(this, NativeAdsActivity::class.java))
-        }
-        binding.btnOpenInter.setOnClickListener {
-            startActivity(Intent(this, DemoInterstitialActivity::class.java))
-        }
-        binding.btnLanguage.setOnClickListener {
-//            openLanguageWithNativeAd()
-            openLanguageWithBannerAd()
-        }
-    }
 
     private fun openLanguageWithNativeAd() {
         val intent = Intent(this, LanguageActivity::class.java).apply {
@@ -89,5 +75,27 @@ class ExampleAdsActivity : DataBindActivity<BannerActivityBinding>(R.layout.bann
             binding.bannerContainer,
             BannerSizeType.LARGE_BANNER
         )
+    }
+
+    override fun inflateBinding(inflater: LayoutInflater): BannerActivityBinding {
+        return BannerActivityBinding.inflate(inflater)
+    }
+
+    override fun updateUI(savedInstanceState: Bundle?) {
+        Log.d("BannerActivity", "language: ${DataManager.user.language}")
+        loadBannerAd()
+        binding.btnReloadBanner.setOnClickListener {
+            loadBannerAd()
+        }
+        binding.btnOpenNative.setOnClickListener {
+            startActivity(Intent(this, NativeAdsActivity::class.java))
+        }
+        binding.btnOpenInter.setOnClickListener {
+            startActivity(Intent(this, DemoInterstitialActivity::class.java))
+        }
+        binding.btnLanguage.setOnClickListener {
+//            openLanguageWithNativeAd()
+            openLanguageWithBannerAd()
+        }
     }
 }
