@@ -38,4 +38,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
+    <!-- Fullscreen Native Ad Container -->
+    <FrameLayout
+        android:id="@+id/fl_ad_native"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
