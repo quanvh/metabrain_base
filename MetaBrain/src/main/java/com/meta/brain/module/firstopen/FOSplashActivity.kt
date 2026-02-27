@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.annotation.ColorInt
@@ -17,6 +18,8 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.meta.brain.R
 import com.meta.brain.module.ads.AdEvent
 import com.meta.brain.module.ads.AdsController
+import com.meta.brain.module.ads.AdsNative
+import com.meta.brain.module.ads.GenericNativeAdViews
 import com.meta.brain.module.ads.UMP
 import com.meta.brain.module.data.DataManager
 import com.meta.brain.module.firebase.FirebaseManager
@@ -24,6 +27,7 @@ import com.meta.brain.module.firebase.RemoteEvent
 import com.meta.brain.module.language.LanguageActivity
 import com.meta.brain.module.language.LanguageModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -38,6 +42,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "FOSplashActivity"
+
         @Deprecated("Use constant value directly")
         const val MAX_TIME_SPLASH_AWAIT = 3000L
     }
@@ -58,21 +63,213 @@ abstract class FOSplashActivity : AppCompatActivity() {
         // Override in subclasses
     }
 
+    private val adsNative = AdsNative()
+
+
+    // --- Native Fullscreen Configuration ---
+    open fun getNativeFullscreenId(): String? = null
+    open fun getNativeFullscreenPreloadKey(): String? = "native_fullscreen"
+    open fun getNativeFullscreenLayout(): Int? = null
+
+    /**
+     * Show Native Fullscreen Ad
+     * @param waitClose If true, stays suspended until the ad is closed. If false, returns as soon as ad is loaded/shown.
+     */
+    // ===============================
+    // Native Flow
+    // ===============================
+
+    private suspend fun showNativeBeforeInter() {
+        val adUnitId = getNativeFullscreenId() ?: return
+        val layoutRes = getNativeFullscreenLayout() ?: return
+        val preloadKey = getNativeFullscreenPreloadKey() ?: return
+
+        if (!ensureNativePreloaded(adUnitId, preloadKey)) return
+
+        if (renderNativeFullscreen(adUnitId, layoutRes, preloadKey)) {
+            delay(600)
+            removeNativeFullscreen(preloadKey)
+        }
+    }
+
+    private suspend fun showNativeAfterInter() {
+        val adUnitId = getNativeFullscreenId() ?: return
+        val layoutRes = getNativeFullscreenLayout() ?: return
+        val preloadKey = (getNativeFullscreenPreloadKey() ?: return) + "_after"
+
+        adsNative.preloadNativeAd(this, adUnitId, preloadKey)
+
+        if (!ensureNativePreloaded(adUnitId, preloadKey)) return
+
+        if (renderNativeFullscreen(adUnitId, layoutRes, preloadKey)) {
+            delay(600)
+            removeNativeFullscreen(preloadKey)
+        }
+    }
+
+    private suspend fun ensureNativePreloaded(
+        adUnitId: String,
+        preloadKey: String
+    ): Boolean = suspendCancellableCoroutine { cont ->
+
+        val cachedAd = adsNative.getPreloadedAd(preloadKey)
+        if (cachedAd != null) {
+            cont.resume(true) {}
+            return@suspendCancellableCoroutine
+        }
+
+        adsNative.preloadNativeAd(this, adUnitId, preloadKey, object : AdEvent() {
+            override fun onLoaded() {
+                if (cont.isActive) cont.resume(true) {}
+            }
+
+            override fun onLoadFail() {
+                if (cont.isActive) cont.resume(false) {}
+            }
+        })
+    }
+
+    private suspend fun renderNativeFullscreen(
+        adUnitId: String,
+        layoutRes: Int,
+        preloadKey: String
+    ): Boolean = suspendCancellableCoroutine { cont ->
+
+        runOnUiThread {
+            try {
+                val containerId =
+                    resources.getIdentifier("fl_ad_native", "id", packageName)
+
+                val container =
+                    if (containerId != 0) findViewById<FrameLayout>(containerId) else null
+
+                if (container == null) {
+                    cont.resume(false) {}
+                    return@runOnUiThread
+                }
+
+                val adsView = layoutInflater.inflate(
+                    layoutRes,
+                    null
+                ) as com.google.android.gms.ads.nativead.NativeAdView
+
+                container.visibility = View.VISIBLE
+                container.removeAllViews()
+
+                container.addView(
+                    adsView,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT
+                    )
+                )
+
+                val genericViews = GenericNativeAdViews(adsView)
+
+                adsNative.loadNative(
+                    this,
+                    adUnitId,
+                    genericViews,
+                    object : AdEvent() {
+
+                        override fun onImpress() {
+                            if (cont.isActive) cont.resume(true) {}
+                        }
+
+                        override fun onLoadFail() {
+                            removeNativeFullscreen(preloadKey)
+                            if (cont.isActive) cont.resume(false) {}
+                        }
+                    },
+                    container,
+                    preloadKey
+                )
+
+            } catch (e: Exception) {
+                cont.resume(false) {}
+            }
+        }
+
+        cont.invokeOnCancellation {
+            removeNativeFullscreen(preloadKey)
+        }
+    }
+
+    private fun removeNativeFullscreen(preloadKey: String) {
+        runOnUiThread {
+            try {
+                val containerId =
+                    resources.getIdentifier("fl_ad_native", "id", packageName)
+
+                val container =
+                    if (containerId != 0) findViewById<FrameLayout>(containerId) else null
+
+                container?.removeAllViews()
+                container?.visibility = View.GONE
+
+                adsNative.destroyAd(preloadKey)
+
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+
     /**
      * Interceptor hook for showing full screen ads before navigation
      * Called after splash screen delay and before navigating to main screen
      * Override in subclasses to show full screen ads or perform other async operations
      */
 
-    suspend fun interceptorShowFullScreenAd() {
+    // ===============================
+    // Interceptor Flow
+    // ===============================
+
+    open suspend fun interceptorShowFullScreenAd() = coroutineScope {
+
+        // 1️⃣ Native A
+        showNativeBeforeInter()
+
         val adReady = awaitOpenAdOrTimeout(30_000)
 
         if (FirebaseManager.rc.useAds && adReady) {
+
+            val nativeAfterKey =
+                (getNativeFullscreenPreloadKey() ?: return@coroutineScope) + "_after"
+
+            val nativeAfterId = getNativeFullscreenId()
+
+            // 2️⃣ Chạy song song:
+            // - Show Inter
+            // - Preload Native B
+
+            val preloadJob = if (nativeAfterId != null) {
+                launch {
+                    adsNative.preloadNativeAd(
+                        this@FOSplashActivity,
+                        nativeAfterId,
+                        nativeAfterKey
+                    )
+                }
+            } else null
+
+            // Show Inter và chờ close
             showOpenAdsAndWait()
-        } else {
-            startMain()
         }
+
+        // 3️⃣ Native B
+        showNativeAfterInter()
+
+        startMain()
     }
+
+    private suspend fun awaitOpenAdOrTimeout(timeoutMs: Long): Boolean =
+        withTimeoutOrNull(timeoutMs) {
+            while (!AdsController.isOpenReady()) {
+                delay(200)
+            }
+            true
+        } ?: false
 
     /**
      * Get template ad configuration for LanguageActivity
@@ -136,6 +333,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
                         .coerceIn(0L, MAX_TIME_SPLASH_AWAIT)
 
                 // Wait for remaining time
+                Log.d("KhanhNV", "timeAwaitSplash: $timeAwaitSplash")
                 delay(timeAwaitSplash)
 
                 // Call interceptor hook
@@ -235,50 +433,11 @@ abstract class FOSplashActivity : AppCompatActivity() {
         }
     }
 
-
-    private suspend fun awaitOpenAdOrTimeout(
-        timeoutMs: Long
-    ): Boolean = withTimeoutOrNull(timeoutMs) {
-        suspendCancellableCoroutine { cont ->
-
-            Log.d(TAG, "awaitOpenAdOrTimeout start")
-
-            lifecycleScope.launch {
-                delay(30000)
-            }
-
-            Log.d(TAG, "awaitOpenAdOrTimeout start2")
-            // Nếu đã ready thì resume luôn
-            if (AdsController.isOpenReady()) {
-                cont.resume(true) {}
-                return@suspendCancellableCoroutine
-            }
-
-            // Poll nhẹ (fallback an toàn)
-            val job = lifecycleScope.launch {
-                while (isActive) {
-                    if (AdsController.isOpenReady()) {
-                        if (cont.isActive) {
-                            cont.resume(true) {}
-                        }
-                        break
-                    }
-                    delay(300)
-                }
-            }
-
-            // Cleanup khi cancel
-            cont.invokeOnCancellation {
-                Log.d(TAG, "awaitOpenAdOrTimeout cancelled")
-                job.cancel()
-            }
-        }
-    } ?: false
-
     private suspend fun showOpenAdsAndWait() {
         suspendCancellableCoroutine { cont ->
             when {
                 FirebaseManager.rc.useInterOpen -> {
+                    Log.d(TAG, "showInterOpen")
                     AdsController.showInterOpen(
                         this@FOSplashActivity,
                         object : AdEvent() {
@@ -290,6 +449,7 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 }
 
                 FirebaseManager.rc.useOpenSplash -> {
+                    Log.d(TAG, "showOpenAd")
                     AdsController.showOpenAd(
                         this@FOSplashActivity,
                         object : AdEvent() {
@@ -309,8 +469,6 @@ abstract class FOSplashActivity : AppCompatActivity() {
                 Log.d(TAG, "showOpenAdsAndWait cancelled")
             }
         }
-
-        startMain()
     }
 }
 

@@ -137,4 +137,16 @@ class SplashActivity : FOSplashActivity() {
             }
         }
     }
+
+    override fun getNativeFullscreenId(): String {
+        return getString(R.string.native_home)
+    }
+
+    override fun getNativeFullscreenLayout(): Int {
+        return R.layout.native_full_screen
+    }
+
+    override fun getNativeFullscreenPreloadKey(): String {
+        return "native_fullscreen"
+    }
 }

@@ -10,4 +10,15 @@
     <color name="gunmetal_gray">#43494E3D</color>
 
     <color name="greenTick">#4DAF51</color>
+
+    <color name="primary">#7A5AFF</color>
+    <color name="clr_subtitle">#D9D9D9</color>
+    <color name="clr_global_bg">#111111</color>
+    <color name="clr_carbon_black">#1B1B1B</color>
+    <color name="color_purple_primary">#7A5AFF</color>
+    <color name="color_purple_primary_16">#2A7A5AFF</color>
+    <color name="color_purple_medium">#9263FF</color>
+    <color name="color_purple_light">#E1DFFF</color>
+    <color name="color_gray_medium">#474A57</color>
+    <color name="banner_background">#F2F1F6</color>
 </resources>

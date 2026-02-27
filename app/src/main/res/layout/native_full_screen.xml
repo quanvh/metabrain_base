@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/clr_global_bg"
+    android:paddingTop="@dimen/_24sdp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.gms.ads.nativead.MediaView
+            android:id="@+id/ad_media"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="?actionBarSize"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:background="@color/clr_global_bg" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_effect_native_full_screen"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/ad_headline" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/ad_call_to_action"
+            android:layout_width="0dp"
+            android:layout_marginBottom="@dimen/_16sdp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_radius_24"
+            android:backgroundTint="@color/color_purple_primary"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_10sdp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_16ssp"
+            app:layout_constraintBottom_toTopOf="@id/fakePaddingBottom"
+            app:layout_constraintStart_toStartOf="@+id/ad_body"
+            app:layout_constraintEnd_toEndOf="@+id/ad_body"
+            tools:text="Install" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvBadge"
+            android:layout_width="@dimen/_25sdp"
+            android:layout_height="@dimen/_15sdp"
+            android:layout_marginStart="@dimen/_16sdp"
+            android:background="@drawable/bg_radius_4"
+            android:backgroundTint="@color/color_purple_primary"
+            android:gravity="center"
+            android:text="Ad"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_10ssp"
+            app:layout_constraintBottom_toBottomOf="@+id/ad_headline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/ad_headline"
+            tools:ignore="HardcodedText" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/ad_headline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:layout_marginEnd="@dimen/_16sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@tools:sample/lorem/random"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_16ssp"
+            app:layout_constraintBottom_toTopOf="@+id/ad_body"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvBadge" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/ad_body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_24sdp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="@dimen/_4sdp"
+            android:maxLines="1"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_14sdp"
+            app:layout_constraintBottom_toTopOf="@+id/ad_call_to_action"
+            app:layout_constraintEnd_toEndOf="@+id/ad_headline"
+            app:layout_constraintStart_toStartOf="@+id/tvBadge"
+            tools:text="@tools:sample/lorem/random" />
+
+        <View
+            android:id="@+id/fakePaddingBottom"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.gms.ads.nativead.NativeAdView>

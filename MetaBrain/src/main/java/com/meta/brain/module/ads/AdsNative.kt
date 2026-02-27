@@ -23,19 +23,106 @@ class AdsNative {
     }
 
     private var currentNativeAd: NativeAd? = null
+    private val preloadedAds = mutableMapOf<String, NativeAd>()
+    private val preloadedEvents = mutableMapOf<String, AdEvent?>()
+
+    fun preloadNativeAd(
+        context: Context,
+        adUnitId: String,
+        preloadKey: String,
+        onEvent: AdEvent? = null
+    ) {
+        if (!FirebaseManager.rc.useAds || DataManager.user.removeAds) {
+            onEvent?.onLoadFail()
+            return
+        }
+
+        preloadedEvents[preloadKey] = onEvent
+
+        if (preloadedAds.containsKey(preloadKey)) {
+            onEvent?.onLoaded()
+            return
+        }
+
+        val adLoader = AdLoader.Builder(context, adUnitId)
+            .forNativeAd { nativeAd ->
+                nativeAd.setOnPaidEventListener { adValue ->
+                    AdsController.logAdRevenue(adValue, nativeAd.responseInfo)
+                }
+                preloadedAds[preloadKey] = nativeAd
+            }
+            .withAdListener(object : AdListener() {
+                override fun onAdLoaded() {
+                    debugLog(TAG, "Native Ad preloaded, key: $preloadKey, id: $adUnitId")
+                    preloadedEvents[preloadKey]?.onLoaded()
+                }
+
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    debugLog(TAG, "Native Ad preload failed, key: $preloadKey, error: ${error.message}")
+                    preloadedEvents[preloadKey]?.onLoadFail()
+                    preloadedEvents.remove(preloadKey)
+                }
+
+                override fun onAdImpression() {
+                    debugLog(TAG, "Native Ad preloaded impression, key: $preloadKey")
+                    preloadedEvents[preloadKey]?.onImpress()
+                }
+
+                override fun onAdClicked() {
+                    debugLog(TAG, "Native Ad preloaded click, key: $preloadKey")
+                    preloadedEvents[preloadKey]?.onClick()
+                }
+            })
+            .build()
+        adLoader.loadAd(AdRequest.Builder().build())
+    }
+
+    fun getPreloadedAd(preloadKey: String): NativeAd? {
+        return preloadedAds[preloadKey]
+    }
+
+    fun destroyAd(preloadKey: String) {
+        preloadedAds[preloadKey]?.destroy()
+        preloadedAds.remove(preloadKey)
+        preloadedEvents.remove(preloadKey)
+    }
 
     fun loadNative(
         context: Context,
         adUnit: String,
         views: NativeAdViews,
         onEvent: AdEvent?,
-        container: ViewGroup
+        container: ViewGroup,
+        preloadKey: String? = null
     ) {
         // Tắt ads
         if (!FirebaseManager.rc.useAds || DataManager.user.removeAds) {
             views.root.gone()
             onEvent?.onLoaded()
             return
+        }
+
+        // Check cache first
+        preloadKey?.let { key ->
+            val cachedAd = preloadedAds[key]
+            if (cachedAd != null) {
+                debugLog(TAG, "Using cached Native Ad for key: $key")
+                
+                // Link the new onEvent to the original listener callbacks
+                preloadedEvents[key] = onEvent
+                
+                currentNativeAd?.destroy()
+                currentNativeAd = cachedAd
+                populateNativeAdView(cachedAd, views)
+                views.root.visible()
+                container.run {
+                    removeAllViews()
+                    addView(views.root)
+                }
+                onEvent?.onLoaded()
+                preloadedAds.remove(key) // Consume the ad
+                return
+            }
         }
 
         if (MetaBrainApp.debug) Log.d(TAG, "Native Ad call, id: $adUnit")
